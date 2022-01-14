@@ -67,6 +67,7 @@ def staff(ctx):
   #embed = discord.Embed(color=0xFF0000, description= "❌ You do not have permission to use this")
   #ctx.respond(embed=embed)
 
+
 @bot.slash_command(description="Use me for help!",guild_ids=guild_ids, hidden=True)
 async def help(ctx):
   helpText = """
@@ -94,10 +95,12 @@ async def help(ctx):
   #reply message
   await ctx.respond(embed=embed)
 
+
 @bot.slash_command(description="Show the bot's uptime",guild_ids=guild_ids)
 async def ping(ctx):
   embed = discord.Embed(color=0x00FF00, title="**Pong!**", description=f"{bot.user.name} has been online for {datetime.now()-onlineTime}!")
   await ctx.respond(embed=embed)
+
 
 @bot.slash_command(description="Clear the database",guild_ids=guild_ids)
 async def clear(ctx):
@@ -108,6 +111,7 @@ async def clear(ctx):
     await ctx.respond("Database cleared")
   else:
     await error(ctx, "You do not have the proper permissions to do this")
+
 
 @bot.slash_command(description="Check your invites",guild_ids=guild_ids)
 async def invites(ctx, user:Option(discord.Member, "user to check invites", required=False, default=None)):
@@ -130,7 +134,8 @@ async def invites(ctx, user:Option(discord.Member, "user to check invites", requ
   #reply message
   await ctx.respond(embed=embed)
 
-@bot.slash_command(desctiption="Show all of your active invites", guild_ids=guild_ids)
+
+@bot.slash_command(description="Show all of your active invites", guild_ids=guild_ids)
 async def invite(ctx):
   if await ctx.guild.invites():
     inviteText = "**Code** \_\_\_\_\_\_\_\_\_\_\_\_ **Uses** \_\_ **Expires in**\n"
@@ -150,6 +155,7 @@ async def invite(ctx):
     await ctx.respond(embed=embed)
   else:
     await error(ctx, "You have no active invites")
+
 
 @bot.slash_command(description="Display your servers invite leaderboard",guild_ids=guild_ids)
 async def ileaderboard(ctx, page:Option(int, "Page on the leaderboard", required=False, default=None)):
@@ -207,8 +213,14 @@ async def fetch(ctx):
     embed = discord.Embed(color=0x00FF00, description="**Previous Invites Fetched**")
     await ctx.respond(embed=embed)
 
+#edit = bot.command_group(guild_ids=guild_ids, name="edit", description="Edit a field of data")
 
-
+@bot.slash_command(description="Fetch your server's previous invites",guild_ids=guild_ids)
+async def edit(ctx):
+  if staff(ctx):
+    pass
+  else:
+    await error(ctx, "You do not have the proper permissions to do this")
 
 
 @bot.event
