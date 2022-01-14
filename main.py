@@ -8,7 +8,7 @@ import asyncio
 import json
 from discord import Option
 from discord.ext import commands
-from datetime import datetime
+from datetime import datetime, timedelta
 
 intents = discord.Intents.all()
 bot = discord.Bot(intents=intents)
@@ -74,7 +74,7 @@ async def help(ctx):
   **Commands**
   `/help` - Displays this message
   `/invites [user]` - Check the invites of a user or yourself
-  `/leaderboard` - View the servers invites leaderboard
+  `/ileaderboard` - View the servers invites leaderboard
   `/invite` - View all your active invites
   """
   if staff(ctx):
@@ -127,6 +127,27 @@ async def invites(ctx, user:Option(discord.Member, "user to check invites", requ
   embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
   #reply message
   await ctx.respond(embed=embed)
+
+@bot.slash_command(desctiption="Show all of your active invites", guild_ids=guild_ids)
+async def invite(ctx):
+  if await ctx.guild.invites():
+    inviteText = "**Code** \_\_\_\_\_\_\_\_\_\_\_\_ **Uses** \_\_ **Expires in**\n"
+    for invite in await ctx.guild.invites():
+      if invite.inviter.id == ctx.author.id:
+        dTime = str(timedelta(seconds=invite.max_age))
+        if dTime != "0:00:00":
+          if "day" in dTime:
+            newTime = (dTime[0:6] if dTime.endswith("0:00:00") else dTime[8:]).replace(",","")
+          else:
+            newTime = dTime
+        else:
+          newTime = "Never"
+        inviteText = inviteText + "`" +invite.code+""+(" "*(15-len(invite.code)))+""+ " | " +str(invite.uses)+ " / " +(str(invite.max_uses) if invite.max_uses != 0 else "∞")+ " | " + newTime+ (" "*(15-len(newTime)))+"`"+invite.channel.mention +"\n"
+    embed = discord.Embed(color=0x00FF00, description=inviteText)
+    embed.set_author(name=ctx.author.display_name+"#"+str(ctx.author.discriminator)+"'s Invites", icon_url=ctx.author.display_avatar.url)
+    await ctx.respond(embed=embed)
+  else:
+    await error(ctx, "You have no active invites")
 
 @bot.slash_command(description="Fetch your server's previous invites",guild_ids=guild_ids)
 async def fetch(ctx):
