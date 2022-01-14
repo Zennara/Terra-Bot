@@ -8,6 +8,7 @@ import asyncio
 import json
 from discord import Option
 from discord.ext import commands
+from datetime import datetime
 
 intents = discord.Intents.all()
 bot = discord.Bot(intents=intents)
@@ -15,6 +16,8 @@ bot = discord.Bot(intents=intents)
 guild_ids = [761036747504484392]
 
 invs = {}
+
+onlineTime = datetime.now()
 
 #api limit checker
 r = requests.head(url="https://discord.com/api/v1")
@@ -89,9 +92,10 @@ async def help(ctx):
   #reply message
   await ctx.respond(embed=embed)
 
-@bot.slash_command(description="Ping the bot",guild_ids=guild_ids)
+@bot.slash_command(description="Show the bot's uptime",guild_ids=guild_ids)
 async def ping(ctx):
-  await ctx.respond("Pong!")
+  embed = discord.Embed(color=0x00FF00, title="**Pong!**", description=f"{bot.user.name} has been online for {datetime.now()-onlineTime}!")
+  await ctx.respond(embed=embed)
 
 @bot.slash_command(description="Clear the database",guild_ids=guild_ids)
 async def clear(ctx):
@@ -136,7 +140,10 @@ async def fetch(ctx):
 async def on_ready():
   print(f"{bot.user.name} Online.")
   await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="minecraft"))
-
+  #set online data
+  global onlineTime
+  onlineTime = datetime.now()
+  #loop through guild and check them in db
   for guild in bot.guilds:
     invs[guild.id] = await guild.invites()
     checkGuild(guild)
