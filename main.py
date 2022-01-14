@@ -23,10 +23,6 @@ try:
 except:
   print("No rate limit")
 
-async def error(message, code):
-  embed = discord.Embed(color=0xff0000, description=code)
-  await message.channel.send(embed=embed)
-
 def checkPerms(message):
   if message.author.guild_permissions.manage_guild:
     return True
@@ -41,7 +37,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"iroles":{}, "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter]
 
@@ -49,9 +45,49 @@ def checkGuild(guild):
   if str(guild.id) not in db:
     resetDB(guild)
 
+async def error(ctx, code):
+  embed = discord.Embed(color=0xFF0000, description= f"❌ {code}")
+  await ctx.respond(embed=embed)
 
+def staff(ctx):
+  checkGuild(ctx.guild)
+  mod = db[str(ctx.guild.id)]["mod"]
+  if ctx.author == ctx.guild.owner:
+      return True
+  if mod != 0:
+    if ctx.guild.get_role(mod) <= ctx.author.top_role:
+      return True
+  return False
+  #error response
+  #embed = discord.Embed(color=0xFF0000, description= "❌ You do not have permission to use this")
+  #ctx.respond(embed=embed)
 
+@bot.slash_command(description="Use me for help!",guild_ids=guild_ids, hidden=True)
+async def help(ctx):
+  helpText = """
+  This bot uses **slash commands**. This mean all bot commands starts with `/`.
+  You can find more help in my [Discord server](https://discord.gg/YHHvT5vWnV).
 
+  **Commands**
+  `/help` - Displays this message
+  `/invites [user]` - Check the invites of a user or yourself
+  `/leaderboard` - View the servers invites leaderboard
+  `/invite` - View all your active invites
+  """
+  if staff(ctx):
+    helpText += """
+    
+    **Staff Commands**
+    `/fetch` - Fetch the servers previous invites
+    `/edit <invites|leaves> <amount> [member]` - Edit the invites or leaves of a user
+    `/addirole <invites> <role>` - Add an invite role reward
+    `/delirole <role>` - Delete an invite role reward
+    `/iroles` - Display the server's invite role rewards
+    """
+  embed = discord.Embed(color=0x00FF00,description=helpText)
+  embed.set_footer(text="________________________\n<> Required | [] Optional\nMade By Zennara#8377")
+  #reply message
+  await ctx.respond(embed=embed)
 
 @bot.slash_command(description="Ping the bot",guild_ids=guild_ids)
 async def ping(ctx):
@@ -59,10 +95,13 @@ async def ping(ctx):
 
 @bot.slash_command(description="Clear the database",guild_ids=guild_ids)
 async def clear(ctx):
-  for key in db:
-    del key
-  resetDB(ctx.guild)
-  await ctx.respond("Database cleared")
+  if staff(ctx):
+    for key in db:
+      del key
+    resetDB(ctx.guild)
+    await ctx.respond("Database cleared")
+  else:
+    await error(ctx, "You do not have the proper permissions to do this")
 
 @bot.slash_command(description="Check your invites",guild_ids=guild_ids)
 async def invites(ctx, user:Option(discord.Member, "user to check invites", required=False, default=None)):
@@ -84,6 +123,12 @@ async def invites(ctx, user:Option(discord.Member, "user to check invites", requ
   embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
   #reply message
   await ctx.respond(embed=embed)
+
+@bot.slash_command(description="Fetch your server's previous invites",guild_ids=guild_ids)
+async def fetch(ctx):
+  pass
+
+
 
 
 
