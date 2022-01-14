@@ -66,9 +66,24 @@ async def clear(ctx):
 
 @bot.slash_command(description="Check your invites",guild_ids=guild_ids)
 async def invites(ctx, user:Option(discord.Member, "user to check invites", required=False, default=None)):
+  #get user or author
   if user == None:
     user = ctx.author
-  await ctx.respond(f"{ctx.author} requested {user}")
+  #set default values
+  full = 0
+  leaves = 0
+  totalInvites = 0
+  #check if in db
+  if str(user.id) in db[str(user.guild.id)]["users"]:
+    #get full invites
+    full = db[str(user.guild.id)]["users"][str(user.id)][0]
+    leaves = db[str(user.guild.id)]["users"][str(user.id)][1]
+    totalInvites = full - leaves
+  #make embed
+  embed = discord.Embed(color=0x00FF00,description=f"User has **{totalInvites}** invites! (**{full}** regular, **-{leaves}** leaves)")
+  embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
+  #reply message
+  await ctx.respond(embed=embed)
 
 
 
@@ -112,9 +127,9 @@ async def on_member_join(member):
       print(f"Inviter: {invite.inviter}")
       #add to db if they arent in it
       if str(invite.inviter.id) not in db[str(member.guild.id)]["users"]:
-        [str(member.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0]
+        db[str(member.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0]
       if str(member.id) not in db[str(member.guild.id)]["users"]:
-        [str(member.guild.id)]["users"][str(member.id)] = [0,0,"",0]
+        db[str(member.guild.id)]["users"][str(member.id)] = [0,0,"",0]
       #add to invites
       db[str(member.guild.id)]["users"][str(invite.inviter.id)][0] += 1
       #add code to joiner
