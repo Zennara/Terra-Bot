@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 import math
 
 intents = discord.Intents.all()
-bot = discord.Bot(intents=intents)
+bot = commands.Bot(intents=intents)
 
 guild_ids = [761036747504484392]
 
@@ -213,14 +213,11 @@ async def fetch(ctx):
     embed = discord.Embed(color=0x00FF00, description="**Previous Invites Fetched**")
     await ctx.respond(embed=embed)
 
-#edit = bot.command_group(guild_ids=guild_ids, name="edit", description="Edit a field of data")
+edit = bot.slash_group(name="edit", description="Edit a user's data", guild_ids=guild_ids)
 
-@bot.slash_command(description="Fetch your server's previous invites",guild_ids=guild_ids)
-async def edit(ctx):
-  if staff(ctx):
-    pass
-  else:
-    await error(ctx, "You do not have the proper permissions to do this")
+@edit.slash_command(name="invites",description="Edit a user's invite count",guild_ids=guild_ids)
+async def editinvs(ctx, set:Option(int, "The amount of invites to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
+  pass
 
 
 @bot.event

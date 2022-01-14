@@ -1,0 +1,8 @@
+language="python3"
+run = """
+pip install git+https://github.com/Pycord-Development/pycord
+python main.py
+"""
+
+[packager]
+ignoredPackages=["discord.py", "discord"]
