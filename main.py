@@ -154,6 +154,9 @@ async def invite(ctx):
 @bot.slash_command(description="Display your servers invite leaderboard",guild_ids=guild_ids)
 async def ileaderboard(ctx, page:Option(int, "Page on the leaderboard", required=False, default=None)):
   if db[str(ctx.guild.id)]["users"]:
+    #get page
+    if page == None:
+      page = 1
     tmp = {}
     tmp = dict(db[str(ctx.guild.id)]["users"])
     #make new dictionary to sort
@@ -162,13 +165,8 @@ async def ileaderboard(ctx, page:Option(int, "Page on the leaderboard", required
       #check if it has any invitees or leaves
       if tmp[key][0] != 0 or tmp[key][1] != 0:
         tempdata[key] = tmp[key][0] - tmp[key][1]
-    print(tempdata)
     #sort data
     order = sorted(tempdata.items(), key=lambda x: x[1], reverse=True)
-    print(order)
-    #get page number
-    page = 1
-    page = int(page)
     #check length
     if int(page) >= 1 and int(page) <= math.ceil(len(order) / 10):
       #store all the users in inputText to later print
@@ -176,11 +174,11 @@ async def ileaderboard(ctx, page:Option(int, "Page on the leaderboard", required
       count = 1
       for i in order:
         if count <= page * 10 and count >= page * 10 - 9:
-          inputText += "\n`[" + str(count) +"]` <@!" + str(i[0]) + "> | **" + str(i[1]) + "** invites (**" + str(tmp[str(i[0])][2]) + "** regular, **-" + str(tmp[str(i[0])][3]) + "** leaves)"
+          inputText += f"\n`[ {str(count)} ]` <@!{str(i[0])}> | ** {str(i[1])} ** invites (** {str(tmp[str(i[0])][2])} ** regular, **- {str(tmp[str(i[0])][3])} ** leaves)"
         count += 1
       #print embed
       embed = discord.Embed(color=0x00FF00, description=inputText)
-      embed.set_author(name=ctx.guild.name+" Invite Leaderboard", icon_url=ctx.guild.icon_url)
+      embed.set_author(name=ctx.guild.name+" Invite Leaderboard", icon_url=ctx.guild.icon.url)
       embed.set_footer(text="Page " + str(page) + "/" + str(math.ceil(len(order) / 10)))
       await ctx.respond(embed=embed)
     else:
@@ -191,7 +189,23 @@ async def ileaderboard(ctx, page:Option(int, "Page on the leaderboard", required
 
 @bot.slash_command(description="Fetch your server's previous invites",guild_ids=guild_ids)
 async def fetch(ctx):
-  pass
+  if staff(ctx):
+    #reset inviters invites
+    for invite in await ctx.guild.invites():
+      #check if inviter in db
+      if str(invite.inviter.id) in db[str(ctx.guild.id)]:
+        #reset invites
+        db[str(ctx.guild.id)]["users"][str(invite.inviter.id)][0] = 0
+        db[str(ctx.guild.id)]["users"][str(invite.inviter.id)][1] = 0
+    #loop through invites in guild
+    for invite in await ctx.guild.invites():
+      #check if inviter in db
+      if str(invite.inviter.id) not in db[str(ctx.guild.id)]["users"]:
+        db[str(ctx.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0]
+      #add to invites
+      db[str(ctx.guild.id)]["users"][str(invite.inviter.id)][0] += int(invite.uses)
+    embed = discord.Embed(color=0x00FF00, description="**Previous Invites Fetched**")
+    await ctx.respond(embed=embed)
 
 
 
