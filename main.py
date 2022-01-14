@@ -6,13 +6,15 @@ import requests
 import random
 import asyncio
 import json
+from discord import Option
+from discord.ext import commands
 
 intents = discord.Intents.all()
 bot = discord.Bot(intents=intents)
 
-guild_ids = [806706495466766366]
+guild_ids = [761036747504484392]
 
-invites = {}
+invs = {}
 
 #api limit checker
 r = requests.head(url="https://discord.com/api/v1")
@@ -38,14 +40,35 @@ def find_invite_by_code(invite_list, code):
     if invite.code == code:       
       return invite
 
+def resetDB(guild):
+  db[str(guild.id)] = {"iroles":{}, "users":{}}
+  #guild - [iroles, users]
+  #users format - [invites,leaves,code,inviter]
+
+def checkGuild(guild):
+  if str(guild.id) not in db:
+    resetDB(guild)
 
 
 
 
-@bot.slash_command(guild_ids=guild_ids)
+
+@bot.slash_command(description="Ping the bot",guild_ids=guild_ids)
 async def ping(ctx):
   await ctx.respond("Pong!")
 
+@bot.slash_command(description="Clear the database",guild_ids=guild_ids)
+async def clear(ctx):
+  for key in db:
+    del key
+  resetDB(ctx.guild)
+  await ctx.respond("Database cleared")
+
+@bot.slash_command(description="Check your invites",guild_ids=guild_ids)
+async def invites(ctx, user:Option(discord.Member, "user to check invites", required=False, default=None)):
+  if user == None:
+    user = ctx.author
+  await ctx.respond(f"{ctx.author} requested {user}")
 
 
 
@@ -55,10 +78,12 @@ async def on_ready():
   await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="minecraft"))
 
   for guild in bot.guilds:
-    invites[guild.id] = await guild.invites()
+    invs[guild.id] = await guild.invites()
+    checkGuild(guild)
 
 @bot.event
 async def on_message(message):
+  checkGuild(message.guild)
   DUMP = True
   if DUMP:
     data2 = {}
@@ -72,8 +97,9 @@ async def on_message(message):
 
 @bot.event
 async def on_member_join(member):  
+  checkGuild(member.guild)
   #set invites before
-  before = invites[member.guild.id]
+  before = invs[member.guild.id]
   #get current invites
   after = await member.guild.invites()
   #loop through invites
@@ -81,33 +107,45 @@ async def on_member_join(member):
     #check if invite went up
     if invite.uses < find_invite_by_code(after, invite.code).uses:
       #set gotinvite
-      gotInvite = invite
       print(f"Member {member.name} Joined")
       print(f"Invite Code: {invite.code}")
       print(f"Inviter: {invite.inviter}")
+      #add to db if they arent in it
+      if str(invite.inviter.id) not in db[str(member.guild.id)]["users"]:
+        [str(member.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0]
+      if str(member.id) not in db[str(member.guild.id)]["users"]:
+        [str(member.guild.id)]["users"][str(member.id)] = [0,0,"",0]
+      #add to invites
+      db[str(member.guild.id)]["users"][str(invite.inviter.id)][0] += 1
+      #add code to joiner
+      db[str(member.guild.id)]["users"][str(member.id)][2] = invite.code
+      db[str(member.guild.id)]["users"][str(member.id)][3] = invite.inviter.id
       break
   #reset invites
-  invites[member.guild.id] = after
+  invs[member.guild.id] = after
 
 @bot.event
 async def on_member_remove(member):
+  checkGuild(member.guild)
   pass
 
 @bot.event
 async def on_guild_join(guild):
-  db[str(guild.id)] = {"prefix": "i/", "iroles":{}}
+  checkGuild(guild)
   #write cache
-  invites[guild.id] = await guild.invites()
+  invs[guild.id] = await guild.invites()
 
 @bot.event
 async def on_invite_create(invite):
+  checkGuild(invite.guild)
   #write cache
-  invites[invite.guild.id] = await invite.guild.invites()
+  invs[invite.guild.id] = await invite.guild.invites()
 
 @bot.event
 async def on_invite_delete(invite):
+  checkGuild(invite.guild)
   #write cache
-  invites[invite.guild.id] = await invite.guild.invites()
+  invs[invite.guild.id] = await invite.guild.invites()
 
 
   
