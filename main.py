@@ -587,6 +587,58 @@ async def on_raw_reaction_add(payload):
         await payload.member.add_roles(payload.member.guild.get_role(int(role.id)), atomic=True)
 
   #<------------STARBOARD------------->
+  #check if enabled
+  guild = bot.get_guild(payload.guild_id)
+  if db[str(guild.id)]["star"][0]:
+    #check not restricted category
+    channel = guild.get_channel(payload.channel_id)
+    starchannel = guild.get_channel(db[str(guild.id)]["star"][2])
+    noStarboard = db[str(guild.id)]["star"][3]
+    ej = db[str(guild.id)]["star"][1]
+    amount = db[str(guild.id)]["star"][4]
+    if str(channel.category.id) not in noStarboard and str(channel.id) not in noStarboard:
+      #check for star
+      if payload.emoji.name == ej:
+        message = await channel.fetch_message(payload.message_id)
+        count = {react.emoji: react.count for react in message.reactions}
+        #check star count
+        if count[ej] >= amount:
+          #check msg already in starchannel
+          messages = await starchannel.history(limit=1000).flatten()
+          done = False
+          for msg in messages:
+            if msg.content.startswith(message.jump_url):
+              done = True
+          if not done:
+            embed = discord.Embed(color=0xFFD700, description= message.content)
+            embed.set_author(name=message.author.name + "#" + message.author.discriminator, icon_url=message.author.display_avatar.url)
+            #get all files
+            files = []
+            for ach in message.attachments:
+              files.append(await ach.to_file())
+            #get all non-link embeds
+            doEmbeds = True
+            for emb in message.embeds:
+              if str(emb.provider) != "EmbedProxy()":
+                doEmbeds = False
+            #define webhook
+            #get webhook
+            hooks = await starchannel.webhooks()
+            hookFind = False
+            if hooks:
+              x=0
+              for hook in hooks:
+                if hook.token != None:
+                  webhook = hooks[x]
+                  hookFind = True
+                  break
+                x += 1
+            if not hookFind:
+              webhook= await starchannel.create_webhook(name="TerraBot Required",avatar=None,reason="For starboard")
+            await webhook.send(username=message.author.display_name, avatar_url=message.author.display_avatar.url, content=message.jump_url+"\n\n"+message.content, files=files)
+            #if all non-link embeds
+            if doEmbeds:
+              await webhook.send(username=message.author.display_name, avatar_url=message.author.display_avatar.url, embeds=message.embeds)
   
 
 @bot.event
