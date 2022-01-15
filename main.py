@@ -252,6 +252,7 @@ async def doEdit(ctx, set, user, type):
     embed = discord.Embed(color=0x00FF00,description=f"User now has **{totalInvites}** {type}! {addition}")
     embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
     await ctx.respond(embed=embed)
+    await checkRewards(user)
   else:
     await error(ctx, "You do not have the proper permissions to do this")
 
@@ -270,13 +271,13 @@ async def bumps(ctx, set:Option(int, "The amount of bumps to set to", required=T
 
 async def checkRewards(member):
   #check if in db
-  if str(member.id) in db[str(member.guild.id)]:
+  if str(member.id) in  db[str(member.guild.id)]["users"]:
     #add to invites
     for irole in db[str(member.guild.id)]["iroles"]:
       roleIDs = []
       for role in member.roles:
         roleIDs.append(str(role.id))
-      if db[str(member.guild.id)][str(member.id)][0] - db[str(member.guild.id)][str(member.id)][1] >= db[str(member.guild.id)]["iroles"][irole]:
+      if db[str(member.guild.id)]["users"][str(member.id)][0] - db[str(member.guild.id)]["users"][str(member.id)][1] >= db[str(member.guild.id)]["iroles"][irole]:
         await member.guild.get_member(member.id).add_roles(member.guild.get_role(int(irole)),reason="Invite Reward",atomic=True)
       elif str(member.guild.get_role(int(irole)).id) in roleIDs:
         await member.guild.get_member(member.id).remove_roles(member.guild.get_role(int(irole)),reason="Invite Reward Removal",atomic=True)
