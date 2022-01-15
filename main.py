@@ -81,7 +81,7 @@ async def help(ctx):
   **Commands**
   `/help` - Displays this message
   `/invites [user]` - Check the invites of a user or yourself
-  `/ileaderboard` - View the servers invites leaderboard
+  `/ileaderboard [page]` - View the servers invites leaderboard
   `/invite` - View all your active invites
   """
   if staff(ctx):
