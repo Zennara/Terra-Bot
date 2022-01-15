@@ -423,6 +423,20 @@ async def delrr(ctx, message:Option(str, "The message link of the reaction rewar
   else:
     await error(ctx, "Invalid message link")
 
+@bot.slash_command(description="List the server's role reactions", guild_ids=guild_ids)
+async def showrr(ctx):
+  if db[str(ctx.guild.id)]["roles"]:
+    text = ""
+    for role in db[str(ctx.guild.id)]["roles"]:
+      channel = bot.get_channel(int(role[0]))
+      m = await channel.fetch_message(int(role[1]))
+      text += f"[Message Jump]({m.jump_url}) | {ctx.guild.get_role(int(role[2])).mention} | {role[3]}\n"
+    embed = discord.Embed(description=text, color=0x00FF00)
+    embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
+    await ctx.respond(embed=embed)
+  else:
+    await error(ctx, "No reaction role rewards on this server")
+
 
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
