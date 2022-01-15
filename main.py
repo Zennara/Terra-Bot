@@ -46,7 +46,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":{}, "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -56,7 +56,11 @@ def checkGuild(guild):
 
 async def error(ctx, code):
   embed = discord.Embed(color=0xFF0000, description= f"❌ {code}")
-  await ctx.respond(embed=embed)
+  await ctx.respond(embed=embed, ephemeral=True)
+
+async def confirm(ctx, code, eph): 
+  embed = discord.Embed(color=0x00FF00, description= f"✅ {code}")
+  await ctx.respond(embed=embed, ephemeral=eph)
 
 def staff(ctx):
   checkGuild(ctx.guild)
@@ -67,9 +71,6 @@ def staff(ctx):
     if ctx.guild.get_role(mod) <= ctx.author.top_role:
       return True
   return False
-  #error response
-  #embed = discord.Embed(color=0xFF0000, description= "❌ You do not have permission to use this")
-  #ctx.respond(embed=embed)
 
 
 @bot.slash_command(description="Use me for help!",guild_ids=guild_ids, hidden=True)
@@ -99,7 +100,6 @@ async def help(ctx):
   #button
   view = discord.ui.View()
   view.add_item(discord.ui.Button(emoji="<:zennara:931725235676397650>",label='Website', url='https://www.zennara.xyz', style=discord.ButtonStyle.url))
-  #<:bot:929180626706374656>
   view.add_item(discord.ui.Button(emoji="<:bot:929180626706374656>",label='Discord', url='https://discord.gg/YHHvT5vWnV', style=discord.ButtonStyle.url))
   view.add_item(discord.ui.Button(emoji="💟",label='Donate', url='https://paypal.me/keaganlandfried', style=discord.ButtonStyle.url))
   #reply message
@@ -121,6 +121,12 @@ async def clear(ctx):
     await ctx.respond("Database cleared")
   else:
     await error(ctx, "You do not have the proper permissions to do this")
+
+
+"""
+<----------------------------------INVITE MANAGEMENT----------------------------------->
+"""
+
 
 
 @bot.slash_command(description="Check your invites",guild_ids=guild_ids)
@@ -220,8 +226,7 @@ async def fetch(ctx):
         db[str(ctx.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0,0]
       #add to invites
       db[str(ctx.guild.id)]["users"][str(invite.inviter.id)][0] += int(invite.uses)
-    embed = discord.Embed(color=0x00FF00, description="**Previous Invites Fetched**")
-    await ctx.respond(embed=embed)
+    await confirm(ctx, "**Previous Invites Fetched**", True)
   else:
     await error(ctx, "You do not have the proper permissions to do this")
 
@@ -286,8 +291,7 @@ async def addirole(ctx, role:Option(discord.Role, "The role to award", required=
   if amount > 0:
     if str(role.id) not in db[str(ctx.guild.id)]["iroles"]:
       db[str(ctx.guild.id)]["iroles"][str(role.id)] = amount
-      embed = discord.Embed(color=0x00FF00, description=f"✅ Users will now get the role {role.mention} when reaching **{amount}** invites!")
-      await ctx.respond(embed=embed)
+      await confirm(ctx, f"Users will now get the role {role.mention} when reaching **{amount}** invites!", False)
       for member in ctx.guild.members:
         await checkRewards(member)
     else:
@@ -299,8 +303,7 @@ async def addirole(ctx, role:Option(discord.Role, "The role to award", required=
 async def delirole(ctx, role:Option(discord.Role, "The role the reward is assigned to", required=True, default=None), remove:Option(bool, "Whether to remove roles from users", required=False, default=None)):
   if str(role.id) in db[str(ctx.guild.id)]["iroles"]:
     del db[str(ctx.guild.id)]["iroles"][str(role.id)]
-    embed = discord.Embed(color=0x00FF00, description=f"✅ {role.mention} no longer has a reward assigned to it")
-    await ctx.respond(embed=embed)
+    await confirm(ctx, f"{role.mention} no longer has a reward assigned to it", False)
     if remove == None:
       remove = False
     elif remove:
@@ -332,17 +335,53 @@ async def iroles(ctx):
   else:
     await error(ctx, "The server does not have any invite role-rewards")
 
+
+"""
+<----------------------------------REACTION AND DROPDOWN ROLE REWARDS----------------------------------->
+"""
+class react(discord.ui.View):
+  def __init__(self):
+      super().__init__(timeout=None)
+
+  ROLE_IDS = [923728545224732712, 931784471039049769, 931784416483770408]
+  @discord.ui.select(custom_id="select-1", placeholder='Pick your colour', min_values=0, max_values=3, options=[
+    discord.SelectOption(label='Test1', value=ROLE_IDS[0], description='This is for test1', emoji='🟥'),
+    discord.SelectOption(label='Test2', value=ROLE_IDS[1], description='This is for test2', emoji='🟩'),
+    discord.SelectOption(label='Test3', value=ROLE_IDS[2], description='This is for test3', emoji='🟦')
+  ])
+  async def select_callback(self, select, interaction):
+    text = ""
+    global ROLE_IDS
+    for opt in select.values:
+      print(interaction.guild)
+      print(opt)
+      print(interaction.guild.get_role(int(opt)))
+      text = f"{text}{interaction.guild.get_role(int(opt)).mention}, "
+    await interaction.response.send_message(f'You will now be notified for {text}'[:-2], ephemeral=True)
+
+@bot.slash_command(description="Place the drop-down role reward menu in this channel", guild_ids=guild_ids)
+async def roleshere(ctx):
+  embed = discord.Embed(color=0x00FF00, description="**Select the roles you wish to access.**")
+  await ctx.send(embed=embed, view=react())
+  await confirm(ctx, f"Dropdown menu sent", True)
+
+"""
+<----------------------------------EVENTS----------------------------------->
+"""
 @bot.event
 async def on_ready():
   print(f"{bot.user.name} Online.")
   await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name="minecraft"))
-  #set online data
+  #set online data  
   global onlineTime
   onlineTime = datetime.now()
   #loop through guild and check them in db
   for guild in bot.guilds:
     invs[guild.id] = await guild.invites()
     checkGuild(guild)
+
+  #persistance
+  bot.add_view(react())
 
 @bot.event
 async def on_message(message):
