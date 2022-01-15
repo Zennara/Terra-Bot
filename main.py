@@ -371,9 +371,7 @@ async def on_member_join(member):
     #check if invite went up
     if invite.uses < find_invite_by_code(after, invite.code).uses:
       #set gotinvite
-      print(f"Member {member.name} Joined")
-      print(f"Invite Code: {invite.code}")
-      print(f"Inviter: {invite.inviter}")
+      print(f"{member.name} JOINED with {invite.code} from {invite.inviter}\n")
       #add to db if they arent in it
       if str(invite.inviter.id) not in db[str(member.guild.id)]["users"]:
         db[str(member.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0,0]
@@ -391,7 +389,20 @@ async def on_member_join(member):
 @bot.event
 async def on_member_remove(member):
   checkGuild(member.guild)
-  pass
+  #add to leaves
+  #check if left member is in db
+  if str(member.id) in db[str(member.guild.id)]["users"]:
+    #ensure there was inviter
+    if db[str(member.guild.id)]["users"][str(member.id)][2] != "":
+      #check if inviter is in db
+      if str(db[str(member.guild.id)]["users"][str(member.id)][3]) not in db[str(member.guild.id)]["users"]:
+        db[str(member.guild.id)]["users"][str(db[str(member.guild.id)][str(member.id)][3])] = [0,0,"",0,0]
+      #add to inviter leaves
+      db[str(member.guild.id)]["users"][str(db[str(member.guild.id)]["users"][str(member.id)][3])][1] += 1
+      print(f"{member.name} LEFT with {invite.code} from {invite.inviter}")
+      await checkRewards(member.guild.get_member(int(db[str(member.guild.id)]["users"][str(member.id)][3])))
+  #write cache
+  invs[member.guild.id] = await member.guild.invites()
 
 @bot.event
 async def on_guild_join(guild):
