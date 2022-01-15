@@ -19,7 +19,7 @@ from discord.commands import permissions
 intents = discord.Intents.all()
 bot = commands.Bot(intents=intents)
 
-guild_ids = [761036747504484392]
+guild_ids = [761036747504484392, 806706495466766366]
 
 invs = {}
 
@@ -127,11 +127,16 @@ async def clear(ctx):
     for key in db:
       del key
     resetDB(ctx.guild)
-    await ctx.respond("Database cleared")
+    await confirm(ctx, "Guild database cleared", True)
   else:
     await error(ctx, "You do not have the proper permissions to do this")
 
-
+@bot.slash_command(description="Reset the database",guild_ids=guild_ids, default_permissions=False)
+@permissions.is_user(427968672980533269)
+async def reset(ctx):
+  for guild in bot.guilds:
+    resetDB(guild)
+  await confirm(ctx, "Database was reset", True)
 
 """
 <----------------------------------INVITE MANAGEMENT----------------------------------->
@@ -370,6 +375,8 @@ async def addrr(ctx, message:Option(str, "The message link to add the reaction t
   channelID = message[-37:-19]
   messageID = message[-18:]
   if channelID.isnumeric() and messageID.isnumeric():
+    channelID = int(channelID)
+    messageID = int(messageID)
     if bot.get_channel(int(channelID)):
       channel = bot.get_channel(int(channelID))
       if await channel.fetch_message(int(messageID)):
@@ -400,6 +407,8 @@ async def delrr(ctx, message:Option(str, "The message link of the reaction rewar
   channelID = message[-37:-19]
   messageID = message[-18:]
   if channelID.isnumeric() and messageID.isnumeric():
+    channelID = int(channelID)
+    messageID = int(messageID)
     if bot.get_channel(int(channelID)):
       channel = bot.get_channel(int(channelID))
       if await channel.fetch_message(int(messageID)):
@@ -474,6 +483,20 @@ async def on_ready():
 
   #persistance
   bot.add_view(react())
+
+@bot.event
+async def on_raw_reaction_add(payload):
+  if payload.member.id != bot.user.id:
+    for role in payload.member.guild.roles:
+      if [payload.channel_id,payload.message_id,role.id,str(payload.emoji)] in db[str(payload.guild_id)]["roles"]:
+        await payload.member.add_roles(payload.member.guild.get_role(int(role.id)), atomic=True)
+
+@bot.event
+async def on_raw_reaction_remove(payload):
+  if payload.user_id != bot.user.id:
+    for role in bot.get_guild(int(payload.guild_id)).roles:
+      if [payload.channel_id,payload.message_id,role.id,str(payload.emoji)] in db[str(payload.guild_id)]["roles"]:
+        await bot.get_guild(int(payload.guild_id)).get_member(int(payload.user_id)).remove_roles(bot.get_guild(int(payload.guild_id)).get_role(int(role.id)), atomic=True)
 
 @bot.event
 async def on_message(message):
