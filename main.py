@@ -288,6 +288,24 @@ async def delirole(ctx, role:Option(discord.Role, "The role the reward is assign
   else:
     await error(ctx, "Role does not have an assigned reward")
 
+@bot.slash_command(description="View all the server's invite role-rewards", guild_ids=guild_ids)
+async def iroles(ctx):
+  if db[str(ctx.guild.id)]["iroles"]:
+    count = 0
+    #get all RR messages
+    embed = discord.Embed(color=0x00FF00, description="**Invite Role-Rewards**")
+    embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
+    for irole in db[str(ctx.guild.id)]["iroles"]:
+      if count == 25:
+        count = 0
+        await ctx.send(embed=embed)
+        embed = discord.Embed(color=0x00FF00, description="")
+      embed.add_field(name="Invites: "+str(db[str(ctx.guild.id)]["iroles"][irole]), value=f"**Role:** <@&{irole}>")
+      count += 1
+    await ctx.respond(embed=embed)
+  else:
+    await error(ctx, "The server does not have any invite role-rewards")
+
 
 @bot.event
 async def on_ready():
