@@ -510,7 +510,32 @@ async def cnl(ctx, set:Option(discord.TextChannel, "Set the starboard channel. L
     await confirm(ctx, f"{text}The starboard channel is now set to {set.mention}", True)
 
 @star.command(description="Ignore the channel to starboard", guild_ids=guild_ids)
-async def ignore(ctx):
+async def ignore(ctx, ign:Option(bool, "Leave this blank to view ignored channels", required=False, defualt=None)):
+  checkGuild(ctx.guild)
+  if ign == True:
+    db[str(ctx.guild.id)]["star"][3].append(ctx.channel.id)
+    await confirm(ctx, "This channel will **now** be ignored from starboard", True)
+  elif ign == False:
+    if ctx.channel.id in db[str(ctx.guild.id)]["star"][3]:
+      db[str(ctx.guild.id)]["star"][3].remove(ctx.channel.id)
+      await confirm(ctx, "This channel will **no longer** be ignored from starboard", True)
+    else:
+      await error(ctx, "This channel is not currently ignored")
+  else:
+    if db[str(ctx.guild.id)]["star"][3]:
+      text = ""
+      for ignored in db[str(ctx.guild.id)]["star"][3]:
+        if ctx.guild.get_channel(ignored) != None:
+          text = f"{text}{ctx.guild.get_channel(ignored).mention}\n"
+      embed = discord.Embed(title="⭐ Ignored Channels", description=text, color=0x00FF00)
+      await ctx.respond(embed=embed)
+    else:
+      await error(ctx, "There are no ignored channels for starboard")
+    
+      
+
+@star.command(description="Set the amount of reactions for starboard", guild_ids=guild_ids)
+async def amount(ctx, amount:Option(int, "The amount of reactions required for starboard", required=True)):
   checkGuild(ctx.guild)
   pass
 
