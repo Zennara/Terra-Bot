@@ -380,9 +380,12 @@ async def addrr(ctx, message:Option(str, "The message link to add the reaction t
           except:
             await error(ctx, "Invalid emoji")
           else:
-            checkGuild(ctx.guild)
-            db[str(ctx.guild.id)]["roles"].append([channelID,messageID,role.id,emoji])
-            await confirm(ctx, f"{emoji} {role.mention} reaction reward added [here]({msg.jump_url})", True)
+            if [channelID,messageID,role.id,emoji] not in db[str(ctx.guild.id)]["roles"]:
+              checkGuild(ctx.guild)
+              db[str(ctx.guild.id)]["roles"].append([channelID,messageID,role.id,emoji])
+              await confirm(ctx, f"{emoji} {role.mention} reaction reward added [here]({msg.jump_url})", True)
+            else:
+              await error(ctx, "Exact role reaction reward already exists")
         else:
           await error(ctx, "Missing Permissions: Can not award this role")
       else:
