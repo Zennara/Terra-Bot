@@ -359,8 +359,9 @@ async def drophere(ctx):
   await confirm(ctx, f"Dropdown menu sent", True)
 
 @bot.slash_command(description="Add a role reaction reward", guild_ids=guild_ids)
-async def addrr(ctx, message:Option(int, "The message ID to add the reaction reward to", required=True), reaction:Option(str, "The emoji for the reaction", required=True), role:Option(discord.Role, "The role to reward", required=True)):
-  pass
+async def addrr(ctx, message:Option(int, "The message link to add the reaction to", required=True), reaction:Option(str, "The emoji for the reaction", required=True), role:Option(discord.Role, "The role to reward", required=True)):
+  if ctx.guild:
+    pass
 
 
 """
@@ -368,19 +369,19 @@ async def addrr(ctx, message:Option(int, "The message ID to add the reaction rew
 """
 @bot.message_command(name="Get Message ID", guild_ids=guild_ids)
 async def messageid(ctx, message: discord.Message):
-  await confirm(ctx, f"{message.id}", True)
+  await confirm(ctx, f"Message ID: `{message.id}`", True)
 
 @bot.message_command(name="Get Channel ID", guild_ids=guild_ids)
 async def channelid(ctx, message: discord.Message):
-  await confirm(ctx, f"{message.channel.id}", True)
+  await confirm(ctx, f"{message.channel.mention} ID: `{message.channel.id}`", True)
 
 @bot.message_command(name="Get Guild ID", guild_ids=guild_ids)
 async def guildid(ctx, message: discord.Message):
-  await confirm(ctx, f"{message.guild.id}", True)
+  await confirm(ctx, f"{message.guild.name} ID: `{message.guild.id}`", True)
 
-@bot.user_command(name="Get User ID", guild_ids=guild_ids)  # create a user command for the supplied guilds
-async def mention(ctx, member: discord.Member):  # user commands return the member
-  await confirm(ctx, f"{member.name} ID: {member.id}", True)
+@bot.user_command(name="Get User ID", guild_ids=guild_ids)
+async def mention(ctx, member: discord.Member):
+  await confirm(ctx, f"{member.name} ID: `{member.id}`", True)
 
 """
 <----------------------------------EVENTS----------------------------------->
