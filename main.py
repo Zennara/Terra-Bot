@@ -650,6 +650,21 @@ async def on_raw_reaction_remove(payload):
         await bot.get_guild(int(payload.guild_id)).get_member(int(payload.user_id)).remove_roles(bot.get_guild(int(payload.guild_id)).get_role(int(role.id)), atomic=True)
 
 @bot.event
+async def on_guild_role_delete(role):
+  #set var since you cant iterate and remove in one go
+  itemsToRemove = []
+  #loop through role rewards
+  for item in db[str(role.guild.id)]["roles"]:
+    print("test")
+    #if role id in those rewards
+    if role.id in item:
+      #delete key as role no longer exists
+      print(item)
+      itemsToRemove.append(item)
+  for item in itemsToRemove:
+    db[str(role.guild.id)]["roles"].remove(item)
+
+@bot.event
 async def on_message(message):
   checkGuild(message.guild)
   DUMP = True
