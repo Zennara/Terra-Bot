@@ -261,12 +261,8 @@ async def doEdit(ctx, set, user, type):
     await error(ctx, "You do not have the proper permissions to do this")
 
 TYPES = ["invites","leaves","bumps"]
-async def getType(ctx: discord.AutocompleteContext):
-  #Returns a list of colors that begin with the characters entered so far
-  return [x for x in TYPES if x.startswith(ctx.value.lower())]
-
 @bot.slash_command(description="Edit a user's invites, leaves, or bumps", guild_ids=guild_ids)
-async def edit(ctx,type:Option(str, "Edit invites, leaves, or bumps", autocomplete=getType), set:Option(int, "The amount of invites to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
+async def edit(ctx,type:Option(str, "Edit invites, leaves, or bumps", choices=TYPES), set:Option(int, "The amount of invites to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
   if type in TYPES:
     await doEdit(ctx, set, user, type)
   else:
@@ -353,14 +349,11 @@ class react(discord.ui.View):
     text = ""
     global ROLE_IDS
     for opt in select.values:
-      print(interaction.guild)
-      print(opt)
-      print(interaction.guild.get_role(int(opt)))
       text = f"{text}{interaction.guild.get_role(int(opt)).mention}, "
     await interaction.response.send_message(f'You will now be notified for {text}'[:-2], ephemeral=True)
 
 @bot.slash_command(description="Place the drop-down role reward menu in this channel", guild_ids=guild_ids)
-async def roleshere(ctx):
+async def drophere(ctx):
   embed = discord.Embed(color=0x00FF00, description="**Select the roles you wish to access.**")
   await ctx.send(embed=embed, view=react())
   await confirm(ctx, f"Dropdown menu sent", True)
