@@ -395,6 +395,34 @@ async def addrr(ctx, message:Option(str, "The message link to add the reaction t
   else:
     await error(ctx, "Invalid message link")
 
+@bot.slash_command(description="Delete a role reaction reward", guild_ids=guild_ids)
+async def delrr(ctx, message:Option(str, "The message link of the reaction reward", required=True), emoji:Option(str, "The emoji from the reaction", required=True), role:Option(discord.Role, "The role to remove", required=True)):
+  channelID = message[-37:-19]
+  messageID = message[-18:]
+  if channelID.isnumeric() and messageID.isnumeric():
+    if bot.get_channel(int(channelID)):
+      channel = bot.get_channel(int(channelID))
+      if await channel.fetch_message(int(messageID)):
+        msg = await channel.fetch_message(int(messageID))
+        try:
+          await msg.add_reaction(emoji)
+        except:
+          await error(ctx, "Invalid emoji")
+        else:
+          if [channelID,messageID,role.id,emoji] in db[str(ctx.guild.id)]["roles"]:
+            checkGuild(ctx.guild)
+            db[str(ctx.guild.id)]["roles"].remove([channelID,messageID,role.id,emoji])
+            await msg.remove_reaction(emoji, ctx.guild.get_member(bot.user.id))
+            await confirm(ctx, f"{emoji} {role.mention} reaction reward removed from [here]({msg.jump_url})", True)
+          else:
+            await error(ctx, "Role reaction reward does not exist")
+      else:
+        await error(ctx, "Invalid Message")
+    else:
+      await error(ctx, "Channel ID is invalid")
+  else:
+    await error(ctx, "Invalid message link")
+
 
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
