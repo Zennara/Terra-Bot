@@ -55,8 +55,9 @@ def resetDB(guild):
   #users format - [invites,leaves,code,inviter,bumps]
 
 def checkGuild(guild):
-  if str(guild.id) not in db:
-    resetDB(guild)
+  if guild != None:
+    if str(guild.id) not in db:
+      resetDB(guild)
 
 async def error(ctx, code):
   embed = discord.Embed(color=0xFF0000, description= f"❌ {code}")
