@@ -17,7 +17,7 @@ import math
 from discord.commands import permissions
 
 intents = discord.Intents.all()
-bot = commands.Bot(intents=intents)
+bot = discord.Bot(intents=intents)
 
 guild_ids = [761036747504484392, 806706495466766366]
 
@@ -50,7 +50,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[]], "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -137,6 +137,7 @@ async def reset(ctx):
   for guild in bot.guilds:
     resetDB(guild)
   await confirm(ctx, "Database was reset", True)
+
 
 """
 <----------------------------------INVITE MANAGEMENT----------------------------------->
@@ -448,6 +449,73 @@ async def showrr(ctx):
 
 
 """
+<----------------------------------STARBOARD COMMANDS----------------------------------->
+"""
+star = SlashCommandGroup("star", "Starboard commands", guild_ids=guild_ids)
+
+@star.command(description="Toggle the starboard feature", guild_ids=guild_ids)
+async def toggle(ctx, flag:Option(bool, "Whether to enable or disable this module", required=True)):
+  checkGuild(ctx.guild)
+  db[str(ctx.guild.id)]["star"][0] =  flag
+  await confirm(ctx, f"The starboard module was set to **{flag}**", True)
+
+@star.command(description="Set the starboard emoji", guild_ids=guild_ids)
+async def emoji(ctx, emoji:Option(str, "Set the starboard emoji. Leave blank to view the current emoji", required=False, default=None)):
+  checkGuild(ctx.guild)
+  if emoji == None:
+    current = db[str(ctx.guild.id)]["star"][1]
+    try:
+      async for message in ctx.channel.history(limit=1):
+        await message.remove_reaction(current, ctx.guild.get_member(bot.user.id))
+        break
+    except:
+      await error(ctx, "This emoji is no longer valid. The starboard emoji was set to ⭐")
+    else:
+      emoji = db[str(ctx.guild.id)]["star"][1]
+      await confirm(ctx, f"The current starbord emoji is  {emoji}", False)
+  else:
+    try:
+      async for message in ctx.channel.history(limit=1):
+        await message.remove_reaction(emoji, ctx.guild.get_member(bot.user.id))
+        break
+    except:
+      await error(ctx, "This is not a valid emoji or bot does not have access")
+    else:
+      db[str(ctx.guild.id)]["star"][1] = emoji
+      await confirm(ctx, f"The emoji for starboard was set to  {emoji}", False)
+
+
+@star.command(name="channel", description="Set the starboard send channel", guild_ids=guild_ids)
+async def cnl(ctx, set:Option(discord.TextChannel, "Set the starboard channel. Leave blank to view the starboard channel", required=False, default=None)):
+  checkGuild(ctx.guild)
+  if set == None:
+    if db[str(ctx.guild.id)]["star"][0] == False:
+      await error(ctx, "Starboard is currently disabled")
+    else:
+      flag = db[str(ctx.guild.id)]["star"][2]
+      if flag != 0:
+        if ctx.guild.get_channel(int(flag)) != None:
+          await confirm(ctx, f"The current starboard channel is {ctx.guild.get_channel(int(flag)).mention}", False)
+        else:
+          db[str(ctx.guild.id)]["star"][2] = 0
+          await error(ctx, "This channel no longer exists. Channel reset to default `None`")
+      else:
+        await error(ctx, "There is no current Starboard channel")
+  else:
+    text=""
+    if db[str(ctx.guild.id)]["star"][0] == False:
+      text = "Starboard was auto-enabled\n"
+      db[str(ctx.guild.id)]["star"][0] = True
+    db[str(ctx.guild.id)]["star"][2] = set.id
+    await confirm(ctx, f"{text}The starboard channel is now set to {set.mention}", True)
+
+@star.command(description="Ignore the channel to starboard", guild_ids=guild_ids)
+async def ignore(ctx):
+  checkGuild(ctx.guild)
+  pass
+
+bot.add_application_command(star)
+"""
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
 """
 @bot.message_command(name="Get Message ID", guild_ids=guild_ids)
@@ -486,13 +554,18 @@ async def on_ready():
 
 @bot.event
 async def on_raw_reaction_add(payload):
+  #<--------REACTION REWARDS--------->
   if payload.member.id != bot.user.id:
     for role in payload.member.guild.roles:
       if [payload.channel_id,payload.message_id,role.id,str(payload.emoji)] in db[str(payload.guild_id)]["roles"]:
         await payload.member.add_roles(payload.member.guild.get_role(int(role.id)), atomic=True)
 
+  #<------------STARBOARD------------->
+  
+
 @bot.event
 async def on_raw_reaction_remove(payload):
+  #<--------REACTION REWARDS--------->
   if payload.user_id != bot.user.id:
     for role in bot.get_guild(int(payload.guild_id)).roles:
       if [payload.channel_id,payload.message_id,role.id,str(payload.emoji)] in db[str(payload.guild_id)]["roles"]:
