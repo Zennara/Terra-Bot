@@ -32,6 +32,10 @@ try:
 except:
   print("No rate limit")
 
+
+"""
+<----------------------------------FUNCTIONS----------------------------------->
+"""
 def checkPerms(message):
   if message.author.guild_permissions.manage_guild:
     return True
@@ -46,7 +50,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":{}, "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -73,6 +77,10 @@ def staff(ctx):
   return False
 
 
+
+"""
+<----------------------------------GENERAL MANAGEMENT----------------------------------->
+"""
 @bot.slash_command(description="Use me for help!",guild_ids=guild_ids, hidden=True)
 async def help(ctx):
   helpText = """
@@ -123,12 +131,10 @@ async def clear(ctx):
     await error(ctx, "You do not have the proper permissions to do this")
 
 
+
 """
 <----------------------------------INVITE MANAGEMENT----------------------------------->
 """
-
-
-
 @bot.slash_command(description="Check your invites",guild_ids=guild_ids)
 async def invites(ctx, user:Option(discord.Member, "user to check invites", required=False, default=None)):
   #get user or author
@@ -359,9 +365,31 @@ async def drophere(ctx):
   await confirm(ctx, f"Dropdown menu sent", True)
 
 @bot.slash_command(description="Add a role reaction reward", guild_ids=guild_ids)
-async def addrr(ctx, message:Option(int, "The message link to add the reaction to", required=True), reaction:Option(str, "The emoji for the reaction", required=True), role:Option(discord.Role, "The role to reward", required=True)):
-  if ctx.guild:
-    pass
+async def addrr(ctx, message:Option(str, "The message link to add the reaction to", required=True), emoji:Option(str, "The emoji for the reaction", required=True), role:Option(discord.Role, "The role to reward", required=True)):
+  channelID = message[-37:-19]
+  messageID = message[-18:]
+  if channelID.isnumeric() and messageID.isnumeric():
+    if bot.get_channel(int(channelID)):
+      channel = bot.get_channel(int(channelID))
+      if await channel.fetch_message(int(messageID)):
+        msg = await channel.fetch_message(int(messageID))
+        if role <= ctx.guild.get_member(bot.user.id).top_role:
+          try:
+            await msg.add_reaction(emoji)
+          except:
+            await error(ctx, "Invalid emoji")
+          else:
+            checkGuild(ctx.guild)
+            db[str(ctx.guild.id)]["roles"].append([channelID,messageID,role.id,emoji])
+            await confirm(ctx, f"{emoji} {role.mention} reaction reward added [here]({msg.jump_url})", True)
+        else:
+          await error(ctx, "Missing Permissions: Can not award this role")
+      else:
+        await error(ctx, "Invalid Message")
+    else:
+      await error(ctx, "Channel ID is invalid")
+  else:
+    await error(ctx, "Invalid message link")
 
 
 """
