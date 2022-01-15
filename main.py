@@ -1,4 +1,6 @@
 #imports (most required)
+#pip install git+https://github.com/Pycord-Development/pycord
+#https://discord.com/api/oauth2/authorize?client_id=931431695977181184&permissions=8&scope=bot%20applications.commands
 import discord
 import os
 import keep_alive
@@ -7,8 +9,9 @@ import requests
 import random
 import asyncio
 import json
-from discord import Option
 from discord.ext import commands
+from discord import Option
+from discord.commands import SlashCommandGroup
 from datetime import datetime, timedelta
 import math
 
@@ -44,7 +47,7 @@ def find_invite_by_code(invite_list, code):
 def resetDB(guild):
   db[str(guild.id)] = {"mod":0, "iroles":{}, "users":{}}
   #guild - [iroles, users]
-  #users format - [invites,leaves,code,inviter]
+  #users format - [invites,leaves,code,inviter,bumps]
 
 def checkGuild(guild):
   if str(guild.id) not in db:
@@ -207,17 +210,58 @@ async def fetch(ctx):
     for invite in await ctx.guild.invites():
       #check if inviter in db
       if str(invite.inviter.id) not in db[str(ctx.guild.id)]["users"]:
-        db[str(ctx.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0]
+        db[str(ctx.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0,0]
       #add to invites
       db[str(ctx.guild.id)]["users"][str(invite.inviter.id)][0] += int(invite.uses)
     embed = discord.Embed(color=0x00FF00, description="**Previous Invites Fetched**")
     await ctx.respond(embed=embed)
+  else:
+    await error(ctx, "You do not have the proper permissions to do this")
 
-edit = bot.slash_group(name="edit", description="Edit a user's data", guild_ids=guild_ids)
 
-@edit.slash_command(name="invites",description="Edit a user's invite count",guild_ids=guild_ids)
-async def editinvs(ctx, set:Option(int, "The amount of invites to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
-  pass
+def editType(user, amount, type):
+  if str(user.id) not in db[str(user.guild.id)]["users"]:
+    db[str(user.guild.id)]["users"][str(user.id)] = [0,0,"",0,0]
+  if type=="invites":
+    db[str(user.guild.id)]["users"][str(user.id)][0] = amount
+  elif type=="leaves":
+    db[str(user.guild.id)]["users"][str(user.id)][1] = amount
+  elif type=="bumps":
+    db[str(user.guild.id)]["users"][str(user.id)][4] = amount
+
+edit = SlashCommandGroup("edit", "Commands related to editing")
+
+async def doEdit(ctx, set, user, type):
+  if user == None:
+    user = ctx.author
+  if staff(ctx):
+    editType(user, set, type)
+    full = db[str(user.guild.id)]["users"][str(user.id)][0]
+    leaves = db[str(user.guild.id)]["users"][str(user.id)][1]
+    totalInvites = full - leaves
+    if type != "bumps":
+      addition = f"(**{full}** regular, **-{leaves}** leaves)"
+    else:
+      addition = ""
+    embed = discord.Embed(color=0x00FF00,description=f"User now has **{totalInvites}** {type}! {addition}")
+    embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
+    await ctx.respond(embed=embed)
+  else:
+    await error(ctx, "You do not have the proper permissions to do this")
+
+@edit.command(description="Edit a user's invites", name="invites", guild_ids=guild_ids)
+async def inv(ctx, set:Option(int, "The amount of invites to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
+  await doEdit(ctx, set, user, "invites")
+
+@edit.command(description="Edit a user's leaves", guild_ids=guild_ids)
+async def leaves(ctx, set:Option(int, "The amount of leaves to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
+  await doEdit(ctx, set, user, "leaves")
+
+@edit.command(description="Edit a user's bumps", guild_ids=guild_ids)
+async def bumps(ctx, set:Option(int, "The amount of bumps to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
+  await doEdit(ctx, set, user, "bumps")
+  
+    
 
 
 @bot.event
@@ -263,9 +307,9 @@ async def on_member_join(member):
       print(f"Inviter: {invite.inviter}")
       #add to db if they arent in it
       if str(invite.inviter.id) not in db[str(member.guild.id)]["users"]:
-        db[str(member.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0]
+        db[str(member.guild.id)]["users"][str(invite.inviter.id)] = [0,0,"",0,0]
       if str(member.id) not in db[str(member.guild.id)]["users"]:
-        db[str(member.guild.id)]["users"][str(member.id)] = [0,0,"",0]
+        db[str(member.guild.id)]["users"][str(member.id)] = [0,0,"",0,0]
       #add to invites
       db[str(member.guild.id)]["users"][str(invite.inviter.id)][0] += 1
       #add code to joiner
@@ -298,7 +342,8 @@ async def on_invite_delete(invite):
   #write cache
   invs[invite.guild.id] = await invite.guild.invites()
 
-
+#add application commands
+bot.add_application_command(edit)
   
 keep_alive.keep_alive()  
 bot.run(os.environ.get("TOKEN"))
