@@ -95,8 +95,14 @@ async def help(ctx):
     """
   embed = discord.Embed(color=0x00FF00,description=helpText)
   embed.set_footer(text="________________________\n<> Required | [] Optional\nMade By Zennara#8377")
+  #button
+  view = discord.ui.View()
+  view.add_item(discord.ui.Button(emoji="<:zennara:931725235676397650>",label='Website', url='https://www.zennara.xyz', style=discord.ButtonStyle.url))
+  #<:bot:929180626706374656>
+  view.add_item(discord.ui.Button(emoji="<:bot:929180626706374656>",label='Discord', url='https://discord.gg/YHHvT5vWnV', style=discord.ButtonStyle.url))
+  view.add_item(discord.ui.Button(emoji="💟",label='Donate', url='https://paypal.me/keaganlandfried', style=discord.ButtonStyle.url))
   #reply message
-  await ctx.respond(embed=embed)
+  await ctx.respond(embed=embed, view=view)
 
 
 @bot.slash_command(description="Show the bot's uptime",guild_ids=guild_ids)
@@ -260,8 +266,18 @@ async def leaves(ctx, set:Option(int, "The amount of leaves to set to", required
 @edit.command(description="Edit a user's bumps", guild_ids=guild_ids)
 async def bumps(ctx, set:Option(int, "The amount of bumps to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
   await doEdit(ctx, set, user, "bumps")
-  
-    
+
+@bot.slash_command(description="Add an invite role-reward", guild_ids=guild_ids)
+async def addirole(ctx, role:Option(discord.Role, "The role to award", required=True, default=None), amount:Option(int, "The amount of invites the user must reach", required=True, default=None)):
+  if amount > 0:
+    if str(role.id) not in db[str(ctx.guild.id)]["iroles"]:
+      db[str(ctx.guild.id)]["iroles"][str(role.id)] = amount
+      embed = discord.Embed(color=0x00FF00, description=f"✅ Users will now get the role {role.mention} when reaching **{amount}** invites!")
+      await ctx.respond(embed=embed)
+    else:
+      await error(ctx, "Role already has an award assigned to it")
+  else:
+    await error(ctx, "Invite amount must be greater than `0`")
 
 
 @bot.event
