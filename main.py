@@ -50,7 +50,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[]], "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],0], "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -484,7 +484,6 @@ async def emoji(ctx, emoji:Option(str, "Set the starboard emoji. Leave blank to 
       db[str(ctx.guild.id)]["star"][1] = emoji
       await confirm(ctx, f"The emoji for starboard was set to  {emoji}", False)
 
-
 @star.command(name="channel", description="Set the starboard send channel", guild_ids=guild_ids)
 async def cnl(ctx, set:Option(discord.TextChannel, "Set the starboard channel. Leave blank to view the starboard channel", required=False, default=None)):
   checkGuild(ctx.guild)
@@ -509,7 +508,7 @@ async def cnl(ctx, set:Option(discord.TextChannel, "Set the starboard channel. L
     db[str(ctx.guild.id)]["star"][2] = set.id
     await confirm(ctx, f"{text}The starboard channel is now set to {set.mention}", True)
 
-@star.command(description="Ignore the channel to starboard", guild_ids=guild_ids)
+@star.command(description="Add, remove, or view ignored channels", guild_ids=guild_ids)
 async def ignore(ctx, ign:Option(bool, "Leave this blank to view ignored channels", required=False, defualt=None)):
   checkGuild(ctx.guild)
   if ign == True:
@@ -531,13 +530,15 @@ async def ignore(ctx, ign:Option(bool, "Leave this blank to view ignored channel
       await ctx.respond(embed=embed)
     else:
       await error(ctx, "There are no ignored channels for starboard")
-    
-      
 
 @star.command(description="Set the amount of reactions for starboard", guild_ids=guild_ids)
 async def amount(ctx, amount:Option(int, "The amount of reactions required for starboard", required=True)):
   checkGuild(ctx.guild)
-  pass
+  if amount > 0:
+    db[str(ctx.guild.id)]["star"][4] = amount
+    await confirm(ctx, f"The amount of reactions for starboard is now **{amount}**", False)
+  else:
+    await error(ctx, "This value must be greater than `0`")
 
 bot.add_application_command(star)
 """
