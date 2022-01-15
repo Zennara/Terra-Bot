@@ -14,6 +14,7 @@ from discord import Option
 from discord.commands import SlashCommandGroup
 from datetime import datetime, timedelta
 import math
+from discord.commands import permissions
 
 intents = discord.Intents.all()
 bot = commands.Bot(intents=intents)
@@ -235,8 +236,6 @@ def editType(user, amount, type):
   elif type=="bumps":
     db[str(user.guild.id)]["users"][str(user.id)][4] = amount
 
-edit = SlashCommandGroup("edit", "Commands related to editing")
-
 async def doEdit(ctx, set, user, type):
   if user == None:
     user = ctx.author
@@ -256,17 +255,17 @@ async def doEdit(ctx, set, user, type):
   else:
     await error(ctx, "You do not have the proper permissions to do this")
 
-@edit.command(description="Edit a user's invites", name="invites", guild_ids=guild_ids)
-async def inv(ctx, set:Option(int, "The amount of invites to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
-  await doEdit(ctx, set, user, "invites")
+TYPES = ["invites","leaves","bumps"]
+async def getType(ctx: discord.AutocompleteContext):
+  #Returns a list of colors that begin with the characters entered so far
+  return [x for x in TYPES if x.startswith(ctx.value.lower())]
 
-@edit.command(description="Edit a user's leaves", guild_ids=guild_ids)
-async def leaves(ctx, set:Option(int, "The amount of leaves to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
-  await doEdit(ctx, set, user, "leaves")
-
-@edit.command(description="Edit a user's bumps", guild_ids=guild_ids)
-async def bumps(ctx, set:Option(int, "The amount of bumps to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
-  await doEdit(ctx, set, user, "bumps")
+@bot.slash_command(description="Edit a user's invites, leaves, or bumps", guild_ids=guild_ids)
+async def edit(ctx,type:Option(str, "Edit invites, leaves, or bumps", autocomplete=getType), set:Option(int, "The amount of invites to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
+  if type in TYPES:
+    await doEdit(ctx, set, user, type)
+  else:
+    await error(ctx, "Invalid type to edit")
 
 
 async def checkRewards(member):
@@ -423,7 +422,6 @@ async def on_invite_delete(invite):
   invs[invite.guild.id] = await invite.guild.invites()
 
 #add application commands
-bot.add_application_command(edit)
   
 keep_alive.keep_alive()  
 bot.run(os.environ.get("TOKEN"))
