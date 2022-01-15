@@ -267,6 +267,20 @@ async def leaves(ctx, set:Option(int, "The amount of leaves to set to", required
 async def bumps(ctx, set:Option(int, "The amount of bumps to set to", required=True, default=None), user:Option(discord.Member,"The member to edit", required=False, default=None)):
   await doEdit(ctx, set, user, "bumps")
 
+
+async def checkRewards(member):
+  #check if in db
+  if str(member.id) in db[str(member.guild.id)]:
+    #add to invites
+    for irole in db[str(member.guild.id)]["iroles"]:
+      roleIDs = []
+      for role in member.roles:
+        roleIDs.append(str(role.id))
+      if db[str(member.guild.id)][str(member.id)][0] - db[str(member.guild.id)][str(member.id)][1] >= db[str(member.guild.id)]["iroles"][irole]:
+        await member.guild.get_member(member.id).add_roles(member.guild.get_role(int(irole)),reason="Invite Reward",atomic=True)
+      elif str(member.guild.get_role(int(irole)).id) in roleIDs:
+        await member.guild.get_member(member.id).remove_roles(member.guild.get_role(int(irole)),reason="Invite Reward Removal",atomic=True)
+
 @bot.slash_command(description="Add an invite role-reward", guild_ids=guild_ids)
 async def addirole(ctx, role:Option(discord.Role, "The role to award", required=True, default=None), amount:Option(int, "The amount of invites the user must reach", required=True, default=None)):
   if amount > 0:
@@ -274,17 +288,29 @@ async def addirole(ctx, role:Option(discord.Role, "The role to award", required=
       db[str(ctx.guild.id)]["iroles"][str(role.id)] = amount
       embed = discord.Embed(color=0x00FF00, description=f"✅ Users will now get the role {role.mention} when reaching **{amount}** invites!")
       await ctx.respond(embed=embed)
+      for member in ctx.guild.members:
+        await checkRewards(member)
     else:
       await error(ctx, "Role already has an award assigned to it")
   else:
     await error(ctx, "Invite amount must be greater than `0`")
 
 @bot.slash_command(description="Delete an invite role-reward", guild_ids=guild_ids)
-async def delirole(ctx, role:Option(discord.Role, "The role the reward is assigned to", required=True, default=None)):
+async def delirole(ctx, role:Option(discord.Role, "The role the reward is assigned to", required=True, default=None), remove:Option(bool, "Whether to remove roles from users", required=False, default=None)):
   if str(role.id) in db[str(ctx.guild.id)]["iroles"]:
     del db[str(ctx.guild.id)]["iroles"][str(role.id)]
     embed = discord.Embed(color=0x00FF00, description=f"✅ {role.mention} no longer has a reward assigned to it")
     await ctx.respond(embed=embed)
+    if remove == None:
+      remove = False
+    elif remove:
+      if ctx.guild.get_role(role.id):
+        if ctx.guild.get_member(bot.user.id).top_role > role:
+          for member in ctx.guild.members:
+            if role in member.roles:
+              await member.remove_roles(ctx.guild.get_role(role.id))
+        else:
+          await error(ctx, f"Could not remove role {role.mention} : Missing Permissions")
   else:
     await error(ctx, "Role does not have an assigned reward")
 
@@ -305,7 +331,6 @@ async def iroles(ctx):
     await ctx.respond(embed=embed)
   else:
     await error(ctx, "The server does not have any invite role-rewards")
-
 
 @bot.event
 async def on_ready():
