@@ -279,6 +279,15 @@ async def addirole(ctx, role:Option(discord.Role, "The role to award", required=
   else:
     await error(ctx, "Invite amount must be greater than `0`")
 
+@bot.slash_command(description="Delete an invite role-reward", guild_ids=guild_ids)
+async def delirole(ctx, role:Option(discord.Role, "The role the reward is assigned to", required=True, default=None)):
+  if str(role.id) in db[str(ctx.guild.id)]["iroles"]:
+    del db[str(ctx.guild.id)]["iroles"][str(role.id)]
+    embed = discord.Embed(color=0x00FF00, description=f"✅ {role.mention} no longer has a reward assigned to it")
+    await ctx.respond(embed=embed)
+  else:
+    await error(ctx, "Role does not have an assigned reward")
+
 
 @bot.event
 async def on_ready():
