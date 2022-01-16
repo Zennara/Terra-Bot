@@ -104,7 +104,8 @@ class helpClass(discord.ui.View):
     discord.SelectOption(label='General', value="General", description='View this for general ands server commands', emoji="❓"),
     discord.SelectOption(label='Invite Tracker', value="Invite Tracker", description='Track invites and award roles based off them', emoji='✉️'),
     discord.SelectOption(label='Award Roles', value="Award Roles", description='Award roles on dropdown menus and reactions', emoji='🖱️'),
-    discord.SelectOption(label='Starboard', value="Starboard", description='Highlight messages that reach x amount of emojis', emoji='⭐')
+    discord.SelectOption(label='Starboard', value="Starboard", description='Highlight messages that reach x amount of emojis', emoji='⭐'),  
+    discord.SelectOption(label='Polls', value="Polls", description='Easily configurable polls for voting!', emoji='📊')
   ])
   async def select_callback(self, select, interaction):
     role = interaction.guild.roles[random.randint(1, len(interaction.guild.roles)-1)]
@@ -156,7 +157,7 @@ class helpClass(discord.ui.View):
         """
     elif select.values[0] == "Starboard":
       text = """
-      The **Starboard** module isa  relatively simple module. Have you ever wanted to have a type of **hall of fame** showcase channel? Well, with this module you do exactly so. Messages that recieve `x` amount of emojis (custom or unicode!) can be placed forever in a pre-determined channel in the form of a **webhook**. This name, profile picure, attachments, media, and embeds will be carries over to the starboard channel. Mods can also select channels to *ignore* from this feature.
+      The **Starboard** module is a  relatively simple module. Have you ever wanted to have a type of **hall of fame** showcase channel? Well, with this module you do exactly so. Messages that recieve `x` amount of emojis (custom or unicode!) can be placed forever in a pre-determined channel in the form of a **webhook**. This name, profile picure, attachments, media, and embeds will be carries over to the starboard channel. Mods can also select channels to *ignore* from this feature.
     
       **Commands**
       `/showrr` - List the server's role reaction rewards
@@ -167,6 +168,16 @@ class helpClass(discord.ui.View):
         `/drophere` - Place the dropdown for roles in the current channel
         `/addrr <message> <role> <emoji>` - Add a role reaction reward
         `/delrr <message> <role> <emoji>` - Delete a role reaction reward
+        """
+    elif select.values[0] == "Polls":
+      text = """
+      The **Polls** module can be used to cast votes on different things in your server. Polls are designed to be easy to set up in a matter of seconds.
+      
+      **Commands**
+      `/poll` - List the server's role reaction rewards
+      """
+      if staff(interaction):
+        text += """
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
@@ -627,6 +638,27 @@ async def amount(ctx, amount:Option(int, "The amount of reactions required for s
     await error(ctx, "This value must be greater than `0`")
 
 bot.add_application_command(star)
+
+
+"""
+<----------------------------------POLLS COMMANDS----------------------------------->
+"""
+poll = SlashCommandGroup("poll", "Polling commands", guild_ids=guild_ids)
+
+@poll.command(description="Create a simple poll", guild_ids=guild_ids)
+async def simple(ctx, description:Option(str, "The description of the poll")):
+  #split current datetime
+  nowDT = str(datetime.now()).split()
+  nowDate = nowDT[0]
+  nowTime = str(datetime.strptime(str(nowDT[1][0 : len(nowDT[1]) - 7]), "%H:%M:%S").strftime("%I:%M %p"))
+  embed = discord.Embed(color=0x00FF00, description=f"**📊 | {description}**")
+  embed.set_footer(text=nowDate + " at " + nowTime)
+  inter = await ctx.send(embed=embed)
+  await inter.add_reaction("👍")
+  await inter.add_reaction("👎")
+  await confirm(ctx, "Simple poll created!", True)
+
+bot.add_application_command(poll)   
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
 """
