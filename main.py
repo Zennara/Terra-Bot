@@ -649,49 +649,36 @@ async def on_raw_reaction_remove(payload):
       if [payload.channel_id,payload.message_id,role.id,str(payload.emoji)] in db[str(payload.guild_id)]["roles"]:
         await bot.get_guild(int(payload.guild_id)).get_member(int(payload.user_id)).remove_roles(bot.get_guild(int(payload.guild_id)).get_role(int(role.id)), atomic=True)
 
-@bot.event
-async def on_guild_role_delete(role):
-  checkGuild(role.guild)
-  #set var since you cant iterate and remove in one go
-  itemsToRemove = []
-  #loop through role rewards
-  for item in db[str(role.guild.id)]["roles"]:
-    #if role id in those rewards
-    if role.id in item:
-      #delete key as role no longer exists
-      itemsToRemove.append(item)
-  #remove items 
-  for item in itemsToRemove:
-    db[str(role.guild.id)]["roles"].remove(item)
-
-@bot.event
-async def on_guild_channel_delete(channel):
-  checkGuild(channel.guild)
-  itemsToRemove = []
-  #loop through roles
-  for item in db[str(channel.guild.id)]["roles"]:
-    #check if channel that was deleted in db
-    if channel.id in item:
-      #add to deletion
-      itemsToRemove.append(item)
-  #delete
-  for item in itemsToRemove:
-    db[str(channel.guild.id)]["roles"].remove(item)
-
-@bot.event
-async def on_guild_emojis_update(guild, before, after):
-  s = set(after)
-  diff = [x for x in before if x not in s]
+def checkRR(check, guild):
+  checkGuild(guild)
   itemsToRemove = []
   #loop through roles
   for item in db[str(guild.id)]["roles"]:
     #check if channel that was deleted in db
-    if str(diff[0]) in item:
+    if check in item:
       #add to deletion
       itemsToRemove.append(item)
   #delete
   for item in itemsToRemove:
     db[str(guild.id)]["roles"].remove(item)
+
+@bot.event
+async def on_guild_role_delete(role):
+  checkRR(role.id, role.guild)
+
+@bot.event
+async def on_guild_channel_delete(channel):
+  checkRR(channel.id, channel.guild)
+
+@bot.event
+async def on_guild_emojis_update(guild, before, after):
+  s = set(after)
+  diff = [x for x in before if x not in s]
+  checkRR(str(diff[0]), guild)
+
+@bot.event
+async def on_raw_message_delete(payload):
+  checkRR(payload.message_id, bot.get_guild(payload.guild_id))
 
 @bot.event
 async def on_message(message):
