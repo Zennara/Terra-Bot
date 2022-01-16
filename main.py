@@ -679,6 +679,21 @@ async def on_guild_channel_delete(channel):
     db[str(channel.guild.id)]["roles"].remove(item)
 
 @bot.event
+async def on_guild_emojis_update(guild, before, after):
+  s = set(after)
+  diff = [x for x in before if x not in s]
+  itemsToRemove = []
+  #loop through roles
+  for item in db[str(guild.id)]["roles"]:
+    #check if channel that was deleted in db
+    if str(diff[0]) in item:
+      #add to deletion
+      itemsToRemove.append(item)
+  #delete
+  for item in itemsToRemove:
+    db[str(guild.id)]["roles"].remove(item)
+
+@bot.event
 async def on_message(message):
   checkGuild(message.guild)
   DUMP = True
