@@ -117,6 +117,13 @@ class helpClass(discord.ui.View):
       **Commands**
       `/help` - Show the preview help page
       `/ping` - Ping the bot for it's uptime
+
+      **Context Menu**
+      Context menu commands can be used when you right click a message or user.
+      `(user) Get User ID` - Display this member's ID
+      `(message) Get Guild ID` - Display the current guild's ID
+      `(message) Get Channel ID` - Display this channel
+      `(message) Get Message ID` - Display this message's ID
       """
       if staff(interaction):
         text += """
@@ -188,27 +195,21 @@ class helpClass(discord.ui.View):
 @bot.slash_command(description="Use me for help!",guild_ids=guild_ids, hidden=True)
 async def help(ctx):
   helpText = """
+  **Slash Commands**
   This bot uses **slash commands**. This mean all bot commands starts with `/`.
   You can find more help in my [Discord server](https://discord.gg/YHHvT5vWnV).
 
-  **Commands**
-  `/help` - Displays this message
-  `/invites [user]` - Check the invites of a user or yourself
-  `/ileaderboard [page]` - View the servers invites leaderboard
-  `/invite` - View all your active invites
+  **Context Menu Commands**
+  This bot also has some commands available via the context menu. This can be accessed by right-clicking a member or user. These commands are different depending on if user or message was clicked.
   """
   if staff(ctx):
     helpText += """
     
-    **Staff Commands**
-    `/fetch` - Fetch the servers previous invites
-    `/edit <invites|leaves> <amount> [member]` - Edit the invites or leaves of a user
-    `/addirole <invites> <role>` - Add an invite role reward
-    `/delirole <role>` - Delete an invite role reward
-    `/iroles` - Display the server's invite role rewards
+    **Staff Setup**
+    Some general things to know as a server mod. Ensure to use the `setup` slash commands to set up the server for your liking. This will also include setting up the role able to use bot-editing commands like `edit` and `fetch`.
     """
   embed = discord.Embed(color=0x00FF00,description=helpText)
-  embed.set_footer(text="________________________\n<> Required | [] Optional\nMade By Zennara#8377")
+  embed.set_footer(text="_______________________\nMade By Zennara#8377\nSelect an module for extensive help", icon_url=ctx.guild.get_member(bot.user.id).display_avatar.url)
   #reply message
   await ctx.respond(embed=embed, view=helpClass())
 
