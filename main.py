@@ -50,7 +50,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],0], "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -109,6 +109,11 @@ class helpClass(discord.ui.View):
   ])
   async def select_callback(self, select, interaction):
     role = interaction.guild.roles[random.randint(1, len(interaction.guild.roles)-1)]
+    guild = interaction.guild
+    starOn = db[str(guild.id)]["star"][0]
+    starChannel = ("to"+guild.get_channel(db[str(guild.id)]["star"][2]).mention) if db[str(guild.id)]["star"][2] != 0 and starOn else "nowhere"
+    starEmoji = db[str(guild.id)]["star"][1]
+    starAmount = db[str(guild.id)]["star"][4]
     if select.values[0] == "General":
       text = """
       This bot uses **slash commands**. This mean all bot commands starts with `/`.
@@ -163,11 +168,10 @@ class helpClass(discord.ui.View):
         `/delrr <message> <role> <emoji>` - Delete a role reaction reward
         """
     elif select.values[0] == "Starboard":
-      text = """
+      text = f"""
       The **Starboard** module is a  relatively simple module. Have you ever wanted to have a type of **hall of fame** showcase channel? Well, with this module you do exactly so. Messages that recieve `x` amount of emojis (custom or unicode!) can be placed forever in a pre-determined channel in the form of a **webhook**. This name, profile picure, attachments, media, and embeds will be carries over to the starboard channel. Mods can also select channels to *ignore* from this feature.
     
-      **Commands**
-      `/showrr` - List the server's role reaction rewards
+      Currently, the message will be sent {starChannel} if **{starAmount}** users react with {starEmoji}
       """
       if staff(interaction):
         text += """
