@@ -658,6 +658,28 @@ async def simple(ctx, description:Option(str, "The description of the poll")):
   await inter.add_reaction("👎")
   await confirm(ctx, "Simple poll created!", True)
 
+@poll.command(description="Create a multi-option poll", guild_ids=guild_ids)
+async def multi(ctx, description:Option(str, "The first option of the poll"), option_1:Option(str, "The first option of the poll", required=True), option_2:Option(str, "The second option of the poll", required=True), option_3:Option(str, "The third option of the poll", required=True), option_4:Option(str, "The fourth option of the poll", required=False), option_5:Option(str, "The fifth option of the poll", required=False), option_6:Option(str, "The sixth option of the poll", required=False), option_7:Option(str, "The seventh option of the poll", required=False), option_8:Option(str, "The eigth option of the poll", required=False), option_9:Option(str, "The ninth option of the poll", required=False), option_10:Option(str, "The tenth option of the poll", required=False)):
+  #numbers
+  nums = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "0️⃣"]
+  #split current datetime
+  nowDT = str(datetime.now()).split()
+  nowDate = nowDT[0]
+  nowTime = str(datetime.strptime(str(nowDT[1][0 : len(nowDT[1]) - 7]), "%H:%M:%S").strftime("%I:%M %p"))
+  options = [option_1,option_2,option_3,option_4,option_5,option_6,option_7,option_8,option_9,option_10]
+  opts = ""
+  count = 0
+  for item in options:
+    if item != None:
+      opts = f"{opts}\n{nums[count]} | {item}"
+      count += 1
+  embed = discord.Embed(color=0x00FF00, description=f"**📊 | {description}**\n{opts}")
+  embed.set_footer(text=nowDate + " at " + nowTime)
+  inter = await ctx.send(embed=embed)
+  for x in range(0,count):
+    await inter.add_reaction(nums[x])
+  await confirm(ctx, "Multi-option poll created!", True)
+
 bot.add_application_command(poll)   
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
