@@ -174,7 +174,8 @@ class helpClass(discord.ui.View):
       The **Polls** module can be used to cast votes on different things in your server. Polls are designed to be easy to set up in a matter of seconds.
       
       **Commands**
-      `/poll` - List the server's role reaction rewards
+      `/poll simple` - Create a simple, two option poll
+      `/poll multi` - Create a poll with up to 10 options
       """
       if staff(interaction):
         text += """
