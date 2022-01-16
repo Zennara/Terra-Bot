@@ -70,11 +70,18 @@ async def confirm(ctx, code, eph):
 def staff(ctx):
   checkGuild(ctx.guild)
   mod = db[str(ctx.guild.id)]["mod"]
-  if ctx.author == ctx.guild.owner:
+  if hasattr(ctx, "author"):
+    if ctx.author == ctx.guild.owner:
+        return True
+    if mod != 0:
+      if ctx.guild.get_role(mod) <= ctx.author.top_role:
+        return True
+  else:
+    if ctx.user.id == ctx.guild.owner.id:
       return True
-  if mod != 0:
-    if ctx.guild.get_role(mod) <= ctx.author.top_role:
-      return True
+    if mod != 0:
+      if ctx.guild.get_role(mod) <= ctx.guild.get_member(ctx.user.id).top_role:
+        return True
   return False
 
 
@@ -82,6 +89,90 @@ def staff(ctx):
 """
 <----------------------------------GENERAL MANAGEMENT----------------------------------->
 """
+class helpClass(discord.ui.View):
+  def __init__(self):
+    super().__init__(timeout=None)
+
+    bwebsite = discord.ui.Button(label='Website', style=discord.ButtonStyle.gray, url='https://www.zennara.me', emoji="<:zennara:931725235676397650>")
+    self.add_item(bwebsite)
+    bdiscord = discord.ui.Button(label='Discord', style=discord.ButtonStyle.gray, url='https://www.discord.gg/YHHvT5vWnV', emoji="<:bot:929180626706374656>")
+    self.add_item(bdiscord)
+    bdonate = discord.ui.Button(label='Donate', style=discord.ButtonStyle.gray, url='https://www.paypal.me/keaganlandfried', emoji="💟")
+    self.add_item(bdonate)
+
+  @discord.ui.select(custom_id="select-2", placeholder='View help with a specific section of commands', min_values=1, max_values=1, options=[
+    discord.SelectOption(label='General', value="General", description='View this for general ands server commands', emoji="❓"),
+    discord.SelectOption(label='Invite Tracker', value="Invite Tracker", description='Track invites and award roles based off them', emoji='✉️'),
+    discord.SelectOption(label='Award Roles', value="Award Roles", description='Award roles on dropdown menus and reactions', emoji='🖱️'),
+    discord.SelectOption(label='Starboard', value="Starboard", description='Highlight messages that reach x amount of emojis', emoji='⭐')
+  ])
+  async def select_callback(self, select, interaction):
+    role = interaction.guild.roles[random.randint(1, len(interaction.guild.roles)-1)]
+    if select.values[0] == "General":
+      text = """
+      This bot uses **slash commands**. This mean all bot commands starts with `/`.
+      You can find more help in my [Discord server](https://discord.gg/YHHvT5vWnV).
+    
+      **Commands**
+      `/help` - Show the preview help page
+      `/ping` - Ping the bot for it's uptime
+      """
+      if staff(interaction):
+        text += """
+        **Mod Commands**
+        `/clear` - Clears the guilds database
+        """
+    elif select.values[0] == "Invite Tracker":
+      text = f"""
+      The **Invite Tracker** module can be used for keeping track of your user's invites and awarding them roles if they reach a specific amount! For example, if set, users could get the role {role.mention} after inviting {random.randint(5, 15)} people! This is, of course, assuming they stay in the server as leaves are also tracked.
+    
+      **Commands**
+      `/invites [user]` - Check the invites of a user or yourself
+      `/ileaderboard [page]` - View the servers invites leaderboard
+      `/invite` - View all your active invites
+      `/iroles` - Display the server's invite role rewards
+      """
+      if staff(interaction):
+        text += """
+        **Mod Commands**
+        `/fetch` - Fetch the servers previous invites
+        `/edit <invites|leaves> <amount> [member]` - Edit the invites or leaves of a user
+        `/addirole <invites> <role>` - Add an invite role reward
+        `/delirole <role>` - Delete an invite role reward
+        """
+    elif select.values[0] == "Award Roles":
+      text = """
+      The **Award Roles** module is perfect for assigning members roles either after they react to a message, or selecting their roles from a modern dropdown menu.
+    
+      **Commands**
+      `/showrr` - List the server's role reaction rewards
+      """
+      if staff(interaction):
+        text += """
+        **Mod Commands**
+        `/drophere` - Place the dropdown for roles in the current channel
+        `/addrr <message> <role> <emoji>` - Add a role reaction reward
+        `/delrr <message> <role> <emoji>` - Delete a role reaction reward
+        """
+    elif select.values[0] == "Starboard":
+      text = """
+      The **Starboard** module isa  relatively simple module. Have you ever wanted to have a type of **hall of fame** showcase channel? Well, with this module you do exactly so. Messages that recieve `x` amount of emojis (custom or unicode!) can be placed forever in a pre-determined channel in the form of a **webhook**. This name, profile picure, attachments, media, and embeds will be carries over to the starboard channel. Mods can also select channels to *ignore* from this feature.
+    
+      **Commands**
+      `/showrr` - List the server's role reaction rewards
+      """
+      if staff(interaction):
+        text += """
+        **Mod Commands**
+        `/drophere` - Place the dropdown for roles in the current channel
+        `/addrr <message> <role> <emoji>` - Add a role reaction reward
+        `/delrr <message> <role> <emoji>` - Delete a role reaction reward
+        """
+      
+    embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
+    embed.set_footer(text="________________________\n<> Required | [] Optional\nMade By Zennara#8377")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+    
 @bot.slash_command(description="Use me for help!",guild_ids=guild_ids, hidden=True)
 async def help(ctx):
   helpText = """
@@ -106,13 +197,8 @@ async def help(ctx):
     """
   embed = discord.Embed(color=0x00FF00,description=helpText)
   embed.set_footer(text="________________________\n<> Required | [] Optional\nMade By Zennara#8377")
-  #button
-  view = discord.ui.View()
-  view.add_item(discord.ui.Button(emoji="<:zennara:931725235676397650>",label='Website', url='https://www.zennara.xyz', style=discord.ButtonStyle.url))
-  view.add_item(discord.ui.Button(emoji="<:bot:929180626706374656>",label='Discord', url='https://discord.gg/YHHvT5vWnV', style=discord.ButtonStyle.url))
-  view.add_item(discord.ui.Button(emoji="💟",label='Donate', url='https://paypal.me/keaganlandfried', style=discord.ButtonStyle.url))
   #reply message
-  await ctx.respond(embed=embed, view=view)
+  await ctx.respond(embed=embed, view=helpClass())
 
 
 @bot.slash_command(description="Show the bot's uptime",guild_ids=guild_ids)
@@ -577,6 +663,7 @@ async def on_ready():
 
   #persistance
   bot.add_view(react())
+  bot.add_view(helpClass())
 
 @bot.event
 async def on_raw_reaction_add(payload):
