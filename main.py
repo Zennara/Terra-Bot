@@ -174,11 +174,13 @@ class helpClass(discord.ui.View):
       Currently, the message will be sent {starChannel} if **{starAmount}** users react with {starEmoji}
       """
       if staff(interaction):
-        text += """
+        text += f"""
         **Mod Commands**
-        `/drophere` - Place the dropdown for roles in the current channel
-        `/addrr <message> <role> <emoji>` - Add a role reaction reward
-        `/delrr <message> <role> <emoji>` - Delete a role reaction reward
+        `/star toggle` - Toggles the starboard module
+        `/star channel` - Sets the starboard channel. Leave this blank to view it.
+        `/star emoji` - Sets the starboard emoji. Leave this blank to view ir.
+        `/star amount` - Sets required amount of {starEmoji} for starboard messages.
+        `/star ignore` - Add or remove the current channel to the list of ignored channels.
         """
     elif select.values[0] == "Polls":
       text = """
