@@ -818,7 +818,7 @@ async def checkCounters():
                 amt = await getTrackerAmount(tracker, guild)
                 if vc.name != f"{tracker}: {amt}":
                   await vc.edit(name=f"{tracker}: {amt}")
-                  break
+                  continue
 
 
 """
