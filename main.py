@@ -760,6 +760,35 @@ TRACKERS = ["Users","Members","Bots","Roles","Boosters","Bans","Categories","Cha
 async def count(ctx, tracker:Option(str, "Select the tracker you wish to count", choices=TRACKERS)):
   await confirm(ctx, f"There are currently **{await getTrackerAmount(tracker, ctx.guild)}** {tracker}", True)
 
+def findTracker(guild, tracker, send):
+  for category in guild.categories:
+    if "stats" in category.name.lower():
+      if category.voice_channels:
+        for channel in category.voice_channels:
+          if channel.name.startswith(tracker):
+            return True, channel, category
+          else:
+            return False, 0, category
+      else:
+        return False, 0, category
+  return False, 1, 1
+
+@counter.command(description="Add a new server stats counter", guild_ids=guild_ids)
+async def add(ctx, tracker:Option(str, "Select the tracker you wish to add", choices=TRACKERS)):
+  flag, err, cat = findTracker(ctx.guild, tracker, True)
+  if flag:
+    await error(ctx, f"{err.mention} already exists!")
+  else:
+    checkCat = ""  
+    if err == 1:
+      cat = await ctx.guild.create_category(name=f"📉 {ctx.guild.name} Stats 📈", position=0, reason="For server stats")
+      everyone = ctx.guild.get_role(ctx.guild.id)
+      await cat.set_permissions(connect=False, target=everyone)
+      checkCat = "Category was automatically created."
+    tr = await getTrackerAmount(tracker, ctx.guild)
+    vc = await cat.create_voice_channel(name=f"{tracker}: {tr}")
+    await confirm(ctx, f"{checkCat}\nTracker channel {vc.mention} was created", True)
+
 bot.add_application_command(counter)
 
 
