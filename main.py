@@ -105,7 +105,8 @@ class helpClass(discord.ui.View):
     discord.SelectOption(label='Invite Tracker', value="Invite Tracker", description='Track invites and award roles based off them', emoji='✉️'),
     discord.SelectOption(label='Award Roles', value="Award Roles", description='Award roles on dropdown menus and reactions', emoji='🖱️'),
     discord.SelectOption(label='Starboard', value="Starboard", description='Highlight messages that reach x amount of emojis', emoji='⭐'),  
-    discord.SelectOption(label='Polls', value="Polls", description='Easily configurable polls for voting!', emoji='📊')
+    discord.SelectOption(label='Polls', value="Polls", description='Easily configurable polls for voting!', emoji='🥧'),
+    discord.SelectOption(label='Server Stats', value="Server Stats", description='Display multiple unique in a seperate category', emoji='📊')
   ])
   async def select_callback(self, select, interaction):
     role = interaction.guild.roles[random.randint(1, len(interaction.guild.roles)-1)]
@@ -176,22 +177,34 @@ class helpClass(discord.ui.View):
       if staff(interaction):
         text += f"""
         **Mod Commands**
-        `/star toggle` - Toggles the starboard module
-        `/star channel` - Sets the starboard channel. Leave this blank to view it.
-        `/star emoji` - Sets the starboard emoji. Leave this blank to view ir.
-        `/star amount` - Sets required amount of {starEmoji} for starboard messages.
-        `/star ignore` - Add or remove the current channel to the list of ignored channels.
+        `/star toggle <bool>` - Toggles the starboard module
+        `/star channel [channel]` - Sets the starboard channel. Leave this blank to view it.
+        `/star emoji [emoji]` - Sets the starboard emoji. Leave this blank to view ir.
+        `/star amount <amount>` - Sets required amount of {starEmoji} for starboard messages.
+        `/star ignore [channel]` - Add or remove the current channel to the list of ignored channels.
         """
     elif select.values[0] == "Polls":
       text = """
       The **Polls** module can be used to cast votes on different things in your server. Polls are designed to be easy to set up in a matter of seconds.
       
       **Commands**
-      `/poll simple` - Create a simple, two option poll
-      `/poll multi` - Create a poll with up to 10 options
+      `/poll simple <desc.>` - Create a simple, two option poll
+      `/poll multi <desc.> <opt1> <opt2> <opt3> [opt4-10]` - Create a poll with up to 10 options
       """
       if staff(interaction):
         text += """
+        """
+    elif select.values[0] == "Server Stats":
+      text = """
+      The **Server Stats** module is capable of keeping tracks of many different aspects of your server. Some of thse are members, channels, messages, and roles. You can either choose to display these as a private or public channel, or just run a command to easily check the current amount.
+      
+      **Commands**
+      `/stats count <tracker>` - Check the amount of a specific tracker
+      """
+      if staff(interaction):
+        text += """
+        `/stats add <tracker> [private]` - Add a server stat channel
+        `/stats remove <tracker>` - Create a poll with up to 10 options
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
