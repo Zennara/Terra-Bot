@@ -816,6 +816,10 @@ async def messageid(ctx, message: discord.Message):
 async def channelid(ctx, message: discord.Message):
   await confirm(ctx, f"{message.channel.mention} ID: `{message.channel.id}`", True)
 
+@bot.message_command(name="Get Category ID", guild_ids=guild_ids)
+async def categoryid(ctx, message: discord.Message):
+  await confirm(ctx, f"**{message.channel.category.name}** ID: `{message.channel.category_id}`", True)
+
 @bot.message_command(name="Get Guild ID", guild_ids=guild_ids)
 async def guildid(ctx, message: discord.Message):
   await confirm(ctx, f"{message.guild.name} ID: `{message.guild.id}`", True)
@@ -934,6 +938,7 @@ async def on_guild_role_delete(role):
 @bot.event
 async def on_guild_channel_delete(channel):
   checkRR(channel.id, channel.guild)
+      
 
 @bot.event
 async def on_guild_emojis_update(guild, before, after):
