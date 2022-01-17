@@ -50,7 +50,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":0, "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -819,6 +819,26 @@ async def checkCounters():
                 if vc.name != f"{tracker}: {amt}":
                   await vc.edit(name=f"{tracker}: {amt}")
                   continue
+
+
+"""
+<----------------------------------DISBOARD COMMANDS----------------------------------->
+"""
+dis = SlashCommandGroup("dis", "Disboard helper commands", guild_ids=guild_ids)
+
+@dis.command(description="Display a member's disboard bumps", guild_ids=guild_ids)
+async def bumps(ctx, member:Option(discord.Member, "The member you wish to view, or yourself", required=False, default=None)):
+  if member == None:
+    member = ctx.author
+  if str(member.id) in db[str(ctx.guild.id)]["users"]:
+    amt = db[str(ctx.guild.id)]["users"][str(member.id)][4]
+  else:
+    amt = 0
+  embed = discord.Embed(color=0x00FF00,description=f"User has **{amt}** bumps!")
+  embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
+  await ctx.respond(embed=embed)
+
+bot.add_application_command(dis)
 
 
 """
