@@ -199,12 +199,12 @@ class helpClass(discord.ui.View):
       The **Server Stats** module is capable of keeping tracks of many different aspects of your server. Some of thse are members, channels, messages, and roles. You can either choose to display these as a private or public channel, or just run a command to easily check the current amount.
       
       **Commands**
-      `/stats count <tracker>` - Check the amount of a specific tracker
+      `/counter count <tracker>` - Check the amount of a specific tracker
       """
       if staff(interaction):
         text += """
-        `/stats add <tracker> [private]` - Add a server stat channel
-        `/stats remove <tracker>` - Create a poll with up to 10 options
+        `/counter add <tracker> [private]` - Add a server stat channel
+        `/counter remove <tracker>` - Create a poll with up to 10 options
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
@@ -707,7 +707,7 @@ bot.add_application_command(poll)
 """
 <----------------------------------SERVER STATS COMMANDS----------------------------------->
 """
-stats = SlashCommandGroup("stats", "Server stats commands", guild_ids=guild_ids)
+counter = SlashCommandGroup("counter", "Server stats commands", guild_ids=guild_ids)
 
 async def getTrackerAmount(tracker, guild):
   def getBots():
@@ -756,11 +756,11 @@ async def getTrackerAmount(tracker, guild):
     return len(guild.roles)
 
 TRACKERS = ["Users","Members","Bots","Roles","Boosters","Bans","Categories","Channels","Text Channels","Voice Channels","Stage Channels","Threads","Archived Threads","Active Threads"]
-@stats.command(description="Check the amount of a tracker type", guild_ids=guild_ids)
+@counter.command(description="Check the amount of a tracker type", guild_ids=guild_ids)
 async def count(ctx, tracker:Option(str, "Select the tracker you wish to count", choices=TRACKERS)):
   await confirm(ctx, f"There are currently **{await getTrackerAmount(tracker, ctx.guild)}** {tracker}", True)
 
-bot.add_application_command(stats)
+bot.add_application_command(counter)
 
 
 """
