@@ -204,7 +204,7 @@ class helpClass(discord.ui.View):
       if staff(interaction):
         text += """
         `/counter add <tracker> [private]` - Add a server stat channel
-        `/counter remove <tracker>` - Create a poll with up to 10 options
+        `/counter remove <tracker>` - Remove a server stat channel
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
