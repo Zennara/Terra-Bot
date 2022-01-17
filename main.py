@@ -701,7 +701,68 @@ async def multi(ctx, description:Option(str, "The first option of the poll"), op
     await inter.add_reaction(nums[x])
   await confirm(ctx, "Multi-option poll created!", True)
 
-bot.add_application_command(poll)   
+bot.add_application_command(poll)
+
+
+"""
+<----------------------------------SERVER STATS COMMANDS----------------------------------->
+"""
+stats = SlashCommandGroup("stats", "Server stats commands", guild_ids=guild_ids)
+
+async def getTrackerAmount(tracker, guild):
+  def getBots():
+    #get amount of bots
+    bots = 0
+    for member in guild.members:
+      if member.bot:
+        bots += 1
+    return bots
+  #tracker get
+  if tracker == "Users":
+    return guild.member_count
+  elif tracker == "Members":
+    return guild.member_count - getBots()
+  elif tracker == "Bots":
+    return getBots()
+  elif tracker == "Boosters":
+    return guild.premium_subscription_count
+  elif tracker == "Bans":
+    return len(await guild.bans())
+  elif tracker == "Categories":
+    return len(guild.categories)
+  elif tracker == "Channels":
+    return len(guild.channels)
+  elif tracker == "Text Channels":
+    return len(guild.text_channels)
+  elif tracker == "Voice Channels":
+    return len(guild.voice_channels)
+  elif tracker == "Stage Channels":
+    return len(guild.stage_channels)
+  elif tracker == "Threads":
+    return len(guild.threads)
+  elif tracker == "Archived Threads":
+    archived = 0
+    for thread in guild.threads:
+      if thread.archived:
+        archived +=1
+    return archived
+  elif tracker == "Active Threads":
+    actives = 0
+    for thread in guild.threads:
+      if not thread.archived:
+        actives +=1
+    return actives
+  elif tracker == "Roles":
+    return len(guild.roles)
+
+TRACKERS = ["Users","Members","Bots","Roles","Boosters","Bans","Categories","Channels","Text Channels","Voice Channels","Stage Channels","Threads","Archived Threads","Active Threads"]
+@stats.command(description="Check the amount of a tracker type", guild_ids=guild_ids)
+async def count(ctx, tracker:Option(str, "Select the tracker you wish to count", choices=TRACKERS)):
+  await confirm(ctx, f"There are currently **{await getTrackerAmount(tracker, ctx.guild)}** {tracker}", True)
+
+bot.add_application_command(stats)
+
+
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
 """
