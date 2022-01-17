@@ -217,7 +217,7 @@ async def help(ctx):
   **Slash Commands**
   This bot uses **slash commands**. This mean all bot commands starts with `/`.
   You can find more help in my [Discord server](https://discord.gg/YHHvT5vWnV).
-
+  
   **Context Menu Commands**
   This bot also has some commands available via the context menu. This can be accessed by right-clicking a member or user. These commands are different depending on if user or message was clicked.
   """
@@ -709,6 +709,8 @@ bot.add_application_command(poll)
 """
 counter = SlashCommandGroup("counter", "Server stats commands", guild_ids=guild_ids)
 
+TRACKERS = ["Users","Members","Bots","Roles","Boosters","Bans","Categories","Channels","Text Channels","Voice Channels","Stage Channels","Threads","Archived Threads","Active Threads"]
+
 async def getTrackerAmount(tracker, guild):
   def getBots():
     #get amount of bots
@@ -755,7 +757,6 @@ async def getTrackerAmount(tracker, guild):
   elif tracker == "Roles":
     return len(guild.roles)
 
-TRACKERS = ["Users","Members","Bots","Roles","Boosters","Bans","Categories","Channels","Text Channels","Voice Channels","Stage Channels","Threads","Archived Threads","Active Threads"]
 @counter.command(description="Check the amount of a tracker type", guild_ids=guild_ids)
 async def count(ctx, tracker:Option(str, "Select the tracker you wish to count", choices=TRACKERS)):
   await confirm(ctx, f"There are currently **{await getTrackerAmount(tracker, ctx.guild)}** {tracker}", True)
@@ -803,6 +804,21 @@ async def delete(ctx, tracker:Option(str, "Select the tracker you wish to delete
     await error(ctx, "Tracker channel does not exist.")
 
 bot.add_application_command(counter)
+
+async def checkCounters():
+  while True:
+    await asyncio.sleep(600)
+    #loop through guilds
+    for guild in bot.guilds:
+      for category in guild.categories:
+        if "stats" in category.name.lower():
+          for vc in category.voice_channels:
+            for tracker in TRACKERS:
+              if vc.name.startswith(tracker):
+                amt = await getTrackerAmount(tracker, guild)
+                if vc.name != f"{tracker}: {amt}":
+                  await vc.edit(name=f"{tracker}: {amt}")
+                  break
 
 
 """
@@ -1027,7 +1043,11 @@ async def on_invite_delete(invite):
   #write cache
   invs[invite.guild.id] = await invite.guild.invites()
 
-#add application commands
+
   
+#create task loops
+bot.loop.create_task(checkCounters())
+
+#bot
 keep_alive.keep_alive()  
 bot.run(os.environ.get("TOKEN"))
