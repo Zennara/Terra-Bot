@@ -760,7 +760,7 @@ TRACKERS = ["Users","Members","Bots","Roles","Boosters","Bans","Categories","Cha
 async def count(ctx, tracker:Option(str, "Select the tracker you wish to count", choices=TRACKERS)):
   await confirm(ctx, f"There are currently **{await getTrackerAmount(tracker, ctx.guild)}** {tracker}", True)
 
-def findTracker(guild, tracker, send):
+def findTracker(guild, tracker):
   for category in guild.categories:
     if "stats" in category.name.lower():
       if category.voice_channels:
@@ -775,7 +775,7 @@ def findTracker(guild, tracker, send):
 
 @counter.command(description="Add a new server stats counter", guild_ids=guild_ids)
 async def add(ctx, tracker:Option(str, "Select the tracker you wish to add", choices=TRACKERS)):
-  flag, err, cat = findTracker(ctx.guild, tracker, True)
+  flag, err, cat = findTracker(ctx.guild, tracker)
   if flag:
     await error(ctx, f"{err.mention} already exists!")
   else:
@@ -788,6 +788,19 @@ async def add(ctx, tracker:Option(str, "Select the tracker you wish to add", cho
     tr = await getTrackerAmount(tracker, ctx.guild)
     vc = await cat.create_voice_channel(name=f"{tracker}: {tr}")
     await confirm(ctx, f"{checkCat}\nTracker channel {vc.mention} was created", True)
+    
+@counter.command(name="del",description="Delete a server stats counter", guild_ids=guild_ids)
+async def delete(ctx, tracker:Option(str, "Select the tracker you wish to delete", choices=TRACKERS)):
+  flag, err, cat = findTracker(ctx.guild, tracker)
+  if flag:
+    deletion = ""
+    if len(cat.channels) == 1:
+      await cat.delete()
+      deletion = "\nCategory was automatically deleted."
+    await confirm(ctx, f"**{err.name}** was deleted.{deletion}", True)
+    await err.delete()
+  else:
+    await error(ctx, "Tracker channel does not exist.")
 
 bot.add_application_command(counter)
 
