@@ -1095,17 +1095,23 @@ async def on_message(message):
   def check(m):
     if str(m.author.id) == "302050872383242240" and m.channel == message.channel: #disboard bot ID
       #check if succesful bump (blue color)
-      if str(m.embeds[0].colour) == "#24b7b7":
+      if str(m.embeds[0].colour) != "#24b7b7":
         if str(message.author.id) not in db[str(m.channel.guild.id)]["users"]:
           db[str(m.channel.guild.id)]["users"][str(message.author.id)] = [0,0,"",0,0]
         db[str(m.channel.guild.id)]["users"][str(message.author.id)][4] += 1
+        return True
   #check if bump
   if message.content.lower().startswith("!d bump"):
     try:
       await bot.wait_for('message', check=check, timeout=2)
+      for role in message.guild.roles:
+        if role.name == "Disboard Alerts":
+          await asyncio.sleep(7800)
+          await asyncio.create_task(message.channel.send(f"{role.mention}"))
+          break
     except:
       pass
-
+      
 @bot.event
 async def on_member_join(member):  
   checkGuild(member.guild)
