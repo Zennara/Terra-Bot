@@ -106,7 +106,8 @@ class helpClass(discord.ui.View):
     discord.SelectOption(label='Award Roles', value="Award Roles", description='Award roles on dropdown menus and reactions', emoji='🖱️'),
     discord.SelectOption(label='Starboard', value="Starboard", description='Highlight messages that reach x amount of emojis', emoji='⭐'),  
     discord.SelectOption(label='Polls', value="Polls", description='Easily configurable polls for voting!', emoji='🥧'),
-    discord.SelectOption(label='Server Stats', value="Server Stats", description='Display multiple unique in a seperate category', emoji='📊')
+    discord.SelectOption(label='Server Stats', value="Server Stats", description='Display multiple unique stats in a seperate category', emoji='📊'),
+    discord.SelectOption(label='Disboard Helper', value="Disboard Helper", description='Track bumps, reminders to bump, and more', emoji="<:disboard:932934384774963200>")
   ])
   async def select_callback(self, select, interaction):
     role = interaction.guild.roles[random.randint(1, len(interaction.guild.roles)-1)]
@@ -205,6 +206,19 @@ class helpClass(discord.ui.View):
         text += """
         `/counter add <tracker> [private]` - Add a server stat channel
         `/counter remove <tracker>` - Remove a server stat channel
+        """
+    elif select.values[0] == "Disboard Helper":
+      text = """
+      The **Disboard Helper** module is an assistant to the popular Discord bot [Disboard](https://disboard.org). Here you can get reminded to bump, track your bumps, and even view a server wide leaderboard.
+      
+      **Commands**
+      `/dis bumps` - View yours or another's Disboard bumps
+      `/dis leaderboard` - View the server-wide bump leaderboard
+      `/dis remind` - Whether to remind you to bump the server
+      """
+      if staff(interaction):
+        text += """
+        `/dis fetch` - Fetch previous Disboard invites from a specified channel
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
@@ -1095,7 +1109,7 @@ async def on_message(message):
   def check(m):
     if str(m.author.id) == "302050872383242240" and m.channel == message.channel: #disboard bot ID
       #check if succesful bump (blue color)
-      if str(m.embeds[0].colour) != "#24b7b7":
+      if str(m.embeds[0].colour) == "#24b7b7":
         if str(message.author.id) not in db[str(m.channel.guild.id)]["users"]:
           db[str(m.channel.guild.id)]["users"][str(message.author.id)] = [0,0,"",0,0]
         db[str(m.channel.guild.id)]["users"][str(message.author.id)][4] += 1
