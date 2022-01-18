@@ -902,9 +902,33 @@ async def dfetch(ctx, channel:Option(discord.TextChannel, "The channel to fetch 
   flag = " and previous bumps were cleared." if reset else "."
   await confirm(ctx, f"**{count}** previous bumps were fetched{flag}", True)
 
-@dis.command(description="Whether to remind users to bump", guild_ids=guild_ids)
-async def remind(ctx, set:Option(bool, "Whether to remind users of a bump"), role:Option(discord.Role, "Role to ping. Leave blank to use the custom role.", required=False, default=None)):
-  pass
+@dis.command(description="Whether to remind you to bump", guild_ids=guild_ids)
+async def remind(ctx, set:Option(bool, "Whether to remind you to bump")):
+  await ctx.defer(ephemeral=True)
+  role = ""
+  for r in ctx.guild.roles:
+    if r.name == "Disboard Alerts":
+      role = r
+  if set:
+    for r in ctx.author.roles:
+      if r.name == "Disboard Alerts":
+        await error(ctx, f"You already have the role {r.mention}")
+        break
+    else:   
+      if role == "":
+        role = await ctx.guild.create_role(name="Disboard Alerts", color=0x24b7b7)
+        addition = f"{role.mention} was automatically created.\n"
+      else:
+        addition = ""
+      await ctx.author.add_roles(role, atomic=True)
+      await confirm(ctx, f"{addition}You will now be reminded to bump Disboard from {role.mention}", True)
+  else:
+    print(role)
+    if role in ctx.author.roles:
+      await ctx.author.remove_roles(role, atomic=True)
+      await confirm(ctx, f"{role.mention} was removed. You will no longer be reminded for Disboard bumps", True)
+    else:
+      await error(ctx, "You do not have the Disboard remind role.")
 
 bot.add_application_command(dis)
 
