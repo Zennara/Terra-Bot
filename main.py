@@ -379,11 +379,12 @@ async def doEdit(ctx, set, user, type):
     editType(user, set, type)
     full = db[str(user.guild.id)]["users"][str(user.id)][0]
     leaves = db[str(user.guild.id)]["users"][str(user.id)][1]
-    totalInvites = full - leaves
     if type != "bumps":
       addition = f"(**{full}** regular, **-{leaves}** leaves)"
+      totalInvites = full - leaves
     else:
       addition = ""
+      totalInvites = db[str(user.guild.id)]["users"][str(user.id)][4]
     embed = discord.Embed(color=0x00FF00,description=f"User now has **{totalInvites}** {type}! {addition}")
     embed.set_author(name=user.display_name, icon_url=user.display_avatar.url)
     await ctx.respond(embed=embed)
