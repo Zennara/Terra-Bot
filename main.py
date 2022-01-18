@@ -842,12 +842,36 @@ async def bumps(ctx, member:Option(discord.Member, "The member you wish to view,
 async def leaderboard(ctx):
   pass
 
-@dis.command(name="fetch", description="Grab the previous Disboard bumps from a channel", guild_ids=guild_ids)
-async def dfetch(ctx, channel:Option(discord.TextChannel, "The channel to fetch the bumps from", required=True)):
-  pass
+@dis.command(name="fetch", description="Grab the previous Disboard bumps from a channel. This could take a while", guild_ids=guild_ids)
+async def dfetch(ctx, channel:Option(discord.TextChannel, "The channel to fetch the bumps from", required=True), reset:Option(bool, "Whether to reset all user's previous bumps during this command", required=False, default=False)):
+  count = 0
+  await ctx.defer(ephemeral=True)
+  if reset:
+    for user in db[str(channel.guild.id)]["users"]:
+      db[str(channel.guild.id)]["users"][user][4] = 0
+  bumped = False
+  bumpedAuthor = ""
+  for messages in await channel.history(limit=None, oldest_first=True).flatten():
+    #check if previous message was bump
+    if bumped == True:
+      #check if bump was from Disboard bot
+      if str(messages.author.id) == "302050872383242240": #disboard bot ID
+        #check if succesful bump (blue color)
+        if str(messages.embeds[0].colour) == "#24b7b7":
+          if str(bumpedAuthor.id) not in db[str(channel.guild.id)]["users"]:
+            db[str(channel.guild.id)]["users"][str(bumpedAuthor.id)] = [0,0,"",0,0]
+          count += 1
+          db[str(channel.guild.id)]["users"][str(bumpedAuthor.id)][4] += 1
+      bumped = False  
+    #check if message was bump
+    if messages.content == "!d bump":
+      bumped = True
+      bumpedAuthor = messages.author
+  flag = " and previous bumps were cleared." if reset else "."
+  await confirm(ctx, f"**{count}** previous bumps were fetched{flag}", True)
 
 @dis.command(description="Whether to remind users to bump", guild_ids=guild_ids)
-async def remind(ctx, set:Option(bool, "Whether to remind users of a bump")):
+async def remind(ctx, set:Option(bool, "Whether to remind users of a bump"), role:Option(discord.Role, "Role to ping. Leave blank to use the custom role.", required=False, default=None)):
   pass
 
 bot.add_application_command(dis)
