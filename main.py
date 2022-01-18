@@ -1035,6 +1035,20 @@ async def on_message(message):
 
     with open("database.json", 'w') as f:
       json.dump(str(data2), f)
+  #<----------------DISBOARD----------------->
+  def check(m):
+    if str(m.author.id) == "302050872383242240" and m.channel == message.channel: #disboard bot ID
+      #check if succesful bump (blue color)
+      if str(m.embeds[0].colour) == "#24b7b7":
+        if str(message.author.id) not in db[str(m.channel.guild.id)]["users"]:
+          db[str(m.channel.guild.id)]["users"][str(message.author.id)] = [0,0,"",0,0]
+        db[str(m.channel.guild.id)]["users"][str(message.author.id)][4] += 1
+  #check if bump
+  if message.content.lower().startswith("!d bump"):
+    try:
+      await bot.wait_for('message', check=check, timeout=2)
+    except:
+      pass
 
 @bot.event
 async def on_member_join(member):  
