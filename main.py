@@ -327,7 +327,7 @@ async def ileaderboard(ctx, page:Option(int, "Page on the leaderboard", required
       count = 1
       for i in order:
         if count <= page * 10 and count >= page * 10 - 9:
-          inputText += f"\n`[ {str(count)} ]` <@!{str(i[0])}> | ** {str(i[1])} ** invites (** {str(tmp[str(i[0])][2])} ** regular, **- {str(tmp[str(i[0])][3])} ** leaves)"
+          inputText += f"\n`[{str(count)}]` <@!{str(i[0])}> | ** {str(i[1])} ** invites (** {str(tmp[str(i[0])][2])} ** regular, **- {str(tmp[str(i[0])][3])} ** leaves)"
         count += 1
       #print embed
       embed = discord.Embed(color=0x00FF00, description=inputText)
@@ -839,8 +839,39 @@ async def bumps(ctx, member:Option(discord.Member, "The member you wish to view,
   await ctx.respond(embed=embed)
 
 @dis.command(description="Show the server's disboard bump leaderboard", guild_ids=guild_ids)
-async def leaderboard(ctx):
-  pass
+async def leaderboard(ctx, page:Option(int, "The page of the leaderboard", required=False)):
+  if db[str(ctx.guild.id)]["users"]:
+    #get page
+    if page == None:
+      page = 1
+    tmp = {}
+    tmp = dict(db[str(ctx.guild.id)]["users"])
+    #make new dictionary to sort
+    tempdata = {}
+    for key in tmp.keys():
+      #check if it has any bumps
+      if tmp[key][4] != 0:
+        tempdata[key] = tmp[key][4]
+    #sort data
+    order = sorted(tempdata.items(), key=lambda x: x[1], reverse=True)
+    #check length
+    if int(page) >= 1 and int(page) <= math.ceil(len(order) / 10):
+      #store all the users in inputText to later print
+      inputText = ""
+      count = 1
+      for i in order:
+        if count <= page * 10 and count >= page * 10 - 9:
+          inputText += f"\n`[{str(count)}]` <@!{str(i[0])}> | ** {str(i[1])} ** bumps"
+        count += 1
+      #print embed
+      embed = discord.Embed(color=0x00FF00, description=inputText)
+      embed.set_author(name=ctx.guild.name+" Bumps Leaderboard", icon_url=ctx.guild.icon.url)
+      embed.set_footer(text="Page " + str(page) + "/" + str(math.ceil(len(order) / 10)))
+      await ctx.respond(embed=embed)
+    else:
+      await error(ctx, "Invalid Page. Currently, this should be between `1` and `"+str(math.ceil(len(order) / 10))+"`.")
+  else:
+    await error(ctx, "Nobody has any invites in your server")
 
 @dis.command(name="fetch", description="Grab the previous Disboard bumps from a channel. This could take a while", guild_ids=guild_ids)
 async def dfetch(ctx, channel:Option(discord.TextChannel, "The channel to fetch the bumps from", required=True), reset:Option(bool, "Whether to reset all user's previous bumps during this command", required=False, default=False)):
