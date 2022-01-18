@@ -50,7 +50,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":0, "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":[False,0], "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -837,6 +837,18 @@ async def bumps(ctx, member:Option(discord.Member, "The member you wish to view,
   embed = discord.Embed(color=0x00FF00,description=f"User has **{amt}** bumps!")
   embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
   await ctx.respond(embed=embed)
+
+@dis.command(description="Show the server's disboard bump leaderboard", guild_ids=guild_ids)
+async def leaderboard(ctx):
+  pass
+
+@dis.command(name="fetch", description="Grab the previous Disboard bumps from a channel", guild_ids=guild_ids)
+async def dfetch(ctx, channel:Option(discord.TextChannel, "The channel to fetch the bumps from", required=True)):
+  pass
+
+@dis.command(description="Whether to remind users to bump", guild_ids=guild_ids)
+async def remind(ctx, set:Option(bool, "Whether to remind users of a bump")):
+  pass
 
 bot.add_application_command(dis)
 
