@@ -59,7 +59,7 @@ def checkGuild(guild):
     if str(guild.id) not in db:
       resetDB(guild)
 
-async def error(ctx, code):
+async def error(ctx, code):  
   embed = discord.Embed(color=0xFF0000, description= f"❌ {code}")
   await ctx.respond(embed=embed, ephemeral=True)
 
@@ -107,7 +107,8 @@ class helpClass(discord.ui.View):
     discord.SelectOption(label='Starboard', value="Starboard", description='Highlight messages that reach x amount of emojis', emoji='⭐'),  
     discord.SelectOption(label='Polls', value="Polls", description='Easily configurable polls for voting!', emoji='🥧'),
     discord.SelectOption(label='Server Stats', value="Server Stats", description='Display multiple unique stats in a seperate category', emoji='📊'),
-    discord.SelectOption(label='Disboard Helper', value="Disboard Helper", description='Track bumps, reminders to bump, and more', emoji="<:disboard:932934384774963200>")
+    discord.SelectOption(label='Disboard Helper', value="Disboard Helper", description='Track bumps, reminders to bump, and more', emoji="<:disboard:932934384774963200>"),
+    discord.SelectOption(label='Disboard Helper', value="Moderation", description='Simple moderation and nickname detection', emoji="🔨")
   ])
   async def select_callback(self, select, interaction):
     role = interaction.guild.roles[random.randint(1, len(interaction.guild.roles)-1)]
@@ -219,6 +220,21 @@ class helpClass(discord.ui.View):
       if staff(interaction):
         text += """
         `/dis fetch` - Fetch previous Disboard invites from a specified channel
+        """
+    elif select.values[0] == "Moderation":
+      text = """
+      The **Moderation** module can be used for simple moderation commands, and a completely configurable auto-bad-nickname detector.
+      
+      **Commands**
+      `/mod nick info` - Show the detector info
+      """
+      if staff(interaction):
+        text += """
+        `/mod nick toggle [bool]` - Turn the detector on or off
+        `/mod nick vulgar [bool]` - Toggle the vulgar language filter
+        `/mod nick zalgo [bool]` - Toggle the zalgo detector (t̷͂̈́h̸͙͝i̸͘͘s̷̈́͑)
+        `/mod nick alphabet [bool]` - Toggle the non-English alphabet filter (哦吉艾娜)
+        `/mod nick font [bool]` - Toggle the non-standard font filter (𝕥𝕙𝕚𝕤)
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
