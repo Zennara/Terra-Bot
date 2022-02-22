@@ -977,7 +977,25 @@ async def checkNick(member):
   else:
     return False
 
+nick = SlashCommandGroup("nick", "Nickname commands", guild_ids=guild_ids)
 
+@nick.command(description="Show the nickname filter information", guild_ids=guild_ids)
+async def info(ctx):
+  text = f"""
+  **Active** : {db[str(ctx.guild.id)]["nick"][0]}
+  **Vulgar Word Filter** : {db[str(ctx.guild.id)]["nick"][1]}
+  **Percent Required for Zalgo/Language/Font** : {db[str(ctx.guild.id)]["nick"][2]}
+  """
+  embed = discord.Embed(description=text, color=0xFFFFFF, title="📜 | Nickname Filter Info")
+  await ctx.respond(embed=embed)
+
+@nick.command(description="Toggle the vulgar language nickname filter", guild_ids=guild_ids)
+async def vulgar(ctx, set:Option(bool, "Set the vulgar language nickname filter")):
+  db[str(ctx.guild.id)]["nick"][1] = set
+  new = db[str(ctx.guild.id)]["nick"][1]
+  await confirm(ctx, f"**Vulgar language nickname filter** is now set to {new}", True)
+
+bot.add_application_command(nick)
 
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
