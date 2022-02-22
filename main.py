@@ -50,7 +50,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":[False,0], "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":[False,0], "nick": [True,True], "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -962,6 +962,20 @@ async def remind(ctx, set:Option(bool, "Whether to remind you to bump")):
 
 bot.add_application_command(dis)
 
+
+"""
+<----------------------------------MODERATION COMMANDS----------------------------------->
+"""
+async def checkNick(member):
+  #anti zalgo etc
+  percentbad = 0
+  characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 `+_-~=[]\\{}|;:\"\',<.>/?!@#$%^&*()"
+  for char in member.name:
+    if char not in characters:
+      percentbad += 1
+  percentbad = (percentbad / len(member.name)) * 100
+  if percentbad > 50:
+    await member.edit(nick="NEEDSCHANGED")
 
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
