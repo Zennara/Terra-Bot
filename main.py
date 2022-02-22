@@ -232,9 +232,6 @@ class helpClass(discord.ui.View):
         text += """
         `/mod nick toggle [bool]` - Turn the detector on or off
         `/mod nick vulgar [bool]` - Toggle the vulgar language filter
-        `/mod nick zalgo [bool]` - Toggle the zalgo detector (t̷͂̈́h̸͙͝i̸͘͘s̷̈́͑)
-        `/mod nick alphabet [bool]` - Toggle the non-English alphabet filter (哦吉艾娜)
-        `/mod nick font [bool]` - Toggle the non-standard font filter (𝕥𝕙𝕚𝕤)
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
