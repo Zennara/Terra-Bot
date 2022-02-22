@@ -232,6 +232,7 @@ class helpClass(discord.ui.View):
         text += """
         `/nick toggle [bool]` - Turn the detector on or off
         `/nick vulgar [bool]` - Toggle the vulgar language filter
+        `/nick percent [int]` - Set the percent required for non-standard character filters
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
@@ -971,7 +972,7 @@ async def checkNick(member):
     if char not in characters:
       percentbad += 1
   percentbad = (percentbad / len(member.name)) * 100
-  if percentbad > db[str(guild.id)]["nick"][2]:
+  if percentbad > db[str(member.guild.id)]["nick"][2]:
     #await member.edit(nick="NEEDSCHANGED")
     return True
   else:
@@ -993,7 +994,13 @@ async def info(ctx):
 async def vulgar(ctx, set:Option(bool, "Set the vulgar language nickname filter")):
   db[str(ctx.guild.id)]["nick"][1] = set
   new = db[str(ctx.guild.id)]["nick"][1]
-  await confirm(ctx, f"**Vulgar language nickname filter** is now set to {new}", True)
+  await confirm(ctx, f"**Vulgar language nickname filter** is now set to `{new}`", True)
+
+@nick.command(description="Change the percent required for non-standard character nickname filter", guild_ids=guild_ids)
+async def percent(ctx, set:Option(int, "Set the percent for non-standard character nickname filter")):
+  db[str(ctx.guild.id)]["nick"][2] = set
+  new = db[str(ctx.guild.id)]["nick"][2]
+  await confirm(ctx, f"**Percent for non-standard character nickname filter** is now set to `{new}`", True)
 
 bot.add_application_command(nick)
 
