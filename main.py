@@ -1002,6 +1002,12 @@ async def percent(ctx, set:Option(int, "Set the percent for non-standard charact
   new = db[str(ctx.guild.id)]["nick"][2]
   await confirm(ctx, f"**Percent for non-standard character nickname filter** is now set to `{new}`", True)
 
+@nick.command(name="toggle", description="Toggle the nickname filters", guild_ids=guild_ids)
+async def ntoggle(ctx, set:Option(bool, "Whether to enable or disable the filters")):
+  db[str(ctx.guild.id)]["nick"][0] = set
+  new = db[str(ctx.guild.id)]["nick"][0]
+  await confirm(ctx, f"**Nickname filters** are now set to `{new}`", True)
+
 bot.add_application_command(nick)
 
 """
