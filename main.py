@@ -964,7 +964,7 @@ bot.add_application_command(dis)
 """
 <----------------------------------MODERATION COMMANDS----------------------------------->
 """
-async def checkNick(member):
+def checkNick(member):
   #anti zalgo etc
   percentbad = 0
   characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 `+_-~=[]\\{}|;:\"\',<.>/?!@#$%^&*()"
@@ -973,7 +973,6 @@ async def checkNick(member):
       percentbad += 1
   percentbad = (percentbad / len(member.name)) * 100
   if percentbad > db[str(member.guild.id)]["nick"][2]:
-    #await member.edit(nick="NEEDSCHANGED")
     return True
   else:
     return False
@@ -1215,6 +1214,9 @@ async def on_member_join(member):
       break
   #reset invites
   invs[member.guild.id] = after
+  #nickname filter
+  if checkNick(member):
+    await member.edit(nick="NEEDSCHANGED")
 
 @bot.event
 async def on_member_remove(member):
@@ -1252,6 +1254,10 @@ async def on_invite_delete(invite):
   #write cache
   invs[invite.guild.id] = await invite.guild.invites()
 
+@bot.event
+async def on_member_update(before, after):
+  if checkNick(after):
+    await after.edit(nick=before.display_name)
 
   
 #create task loops
