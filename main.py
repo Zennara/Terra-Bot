@@ -15,6 +15,9 @@ from discord.commands import SlashCommandGroup
 from datetime import datetime, timedelta
 import math
 from discord.commands import permissions
+from profanity_filter import ProfanityFilter
+import spacy
+
 
 intents = discord.Intents.all()
 bot = discord.Bot(intents=intents)
@@ -24,6 +27,9 @@ guild_ids = [761036747504484392, 806706495466766366]
 invs = {}
 
 onlineTime = datetime.now()
+
+spacy.load('en')
+pf = ProfanityFilter(languages = ['en'])
 
 #api limit checker
 r = requests.head(url="https://discord.com/api/v1")
@@ -976,6 +982,11 @@ def checkNick(member):
     if percentbad > db[str(member.guild.id)]["nick"][2]:
       return True
 
+async def checkVulgar(member):
+  if db[str(member.guild.id)]["nick"][1]:
+    new = pf.censor(member.display_name)
+    await member.edit(nick=new)
+
 nick = SlashCommandGroup("nick", "Nickname commands", guild_ids=guild_ids)
 
 @nick.command(description="Show the nickname filter information", guild_ids=guild_ids)
@@ -1214,6 +1225,7 @@ async def on_member_join(member):
   #reset invites
   invs[member.guild.id] = after
   #nickname filter
+  await checkVulgar(member)
   if checkNick(member):
     await member.edit(nick="NEEDSCHANGED")
 
@@ -1255,6 +1267,7 @@ async def on_invite_delete(invite):
 
 @bot.event
 async def on_member_update(before, after):
+  await checkVulgar(after)
   if checkNick(after):
     await after.edit(nick=before.display_name)
 
