@@ -50,7 +50,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":[False,0], "nick": [True,True], "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":[False,0], "nick": [True,True, 50], "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -226,12 +226,12 @@ class helpClass(discord.ui.View):
       The **Moderation** module can be used for simple moderation commands, and a completely configurable auto-bad-nickname detector.
       
       **Commands**
-      `/mod nick info` - Show the detector info
+      `/nick info` - Show the detector info
       """
       if staff(interaction):
         text += """
-        `/mod nick toggle [bool]` - Turn the detector on or off
-        `/mod nick vulgar [bool]` - Toggle the vulgar language filter
+        `/nick toggle [bool]` - Turn the detector on or off
+        `/nick vulgar [bool]` - Toggle the vulgar language filter
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
@@ -971,8 +971,13 @@ async def checkNick(member):
     if char not in characters:
       percentbad += 1
   percentbad = (percentbad / len(member.name)) * 100
-  if percentbad > 50:
-    await member.edit(nick="NEEDSCHANGED")
+  if percentbad > db[str(guild.id)]["nick"][2]:
+    #await member.edit(nick="NEEDSCHANGED")
+    return True
+  else:
+    return False
+
+
 
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
