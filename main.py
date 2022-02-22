@@ -965,17 +965,16 @@ bot.add_application_command(dis)
 <----------------------------------MODERATION COMMANDS----------------------------------->
 """
 def checkNick(member):
-  #anti zalgo etc
-  percentbad = 0
-  characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 `+_-~=[]\\{}|;:\"\',<.>/?!@#$%^&*()"
-  for char in member.name:
-    if char not in characters:
-      percentbad += 1
-  percentbad = (percentbad / len(member.name)) * 100
-  if percentbad > db[str(member.guild.id)]["nick"][2]:
-    return True
-  else:
-    return False
+  if db[str(member.guild.id)]["nick"][0]:
+    #anti zalgo etc
+    percentbad = 0
+    characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 `+_-~=[]\\{}|;:\"\',<.>/?!@#$%^&*()"
+    for char in member.display_name:
+      if char not in characters:
+        percentbad += 1
+    percentbad = (percentbad / len(member.display_name)) * 100
+    if percentbad > db[str(member.guild.id)]["nick"][2]:
+      return True
 
 nick = SlashCommandGroup("nick", "Nickname commands", guild_ids=guild_ids)
 
