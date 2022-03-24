@@ -1,6 +1,10 @@
 #imports (most required)
 #pip install git+https://github.com/Pycord-Development/pycord
 #https://discord.com/api/oauth2/authorize?client_id=931431695977181184&permissions=8&scope=bot%20applications.commands
+
+#pip install profanity-filter
+#python3 -m spacy download en
+
 import discord
 import os
 import keep_alive
@@ -114,7 +118,7 @@ class helpClass(discord.ui.View):
     discord.SelectOption(label='Polls', value="Polls", description='Easily configurable polls for voting!', emoji='🥧'),
     discord.SelectOption(label='Server Stats', value="Server Stats", description='Display multiple unique stats in a seperate category', emoji='📊'),
     discord.SelectOption(label='Disboard Helper', value="Disboard Helper", description='Track bumps, reminders to bump, and more', emoji="<:disboard:932934384774963200>"),
-    discord.SelectOption(label='Disboard Helper', value="Moderation", description='Simple moderation and nickname detection', emoji="🔨")
+    discord.SelectOption(label='Moderation', value="Moderation", description='Simple moderation and nickname detection', emoji="🔨")
   ])
   async def select_callback(self, select, interaction):
     role = interaction.guild.roles[random.randint(1, len(interaction.guild.roles)-1)]
@@ -128,7 +132,7 @@ class helpClass(discord.ui.View):
       This bot uses **slash commands**. This mean all bot commands starts with `/`.
       You can find more help in my [Discord server](https://discord.gg/YHHvT5vWnV).
     
-      **Commands**
+      **Commands** 
       `/help` - Show the preview help page
       `/ping` - Ping the bot for it's uptime
 
@@ -1018,6 +1022,10 @@ async def ntoggle(ctx, set:Option(bool, "Whether to enable or disable the filter
   await confirm(ctx, f"**Nickname filters** are now set to `{new}`", True)
 
 bot.add_application_command(nick)
+
+#@bot.slash_command(name="lockdown", description="Lockdown the server to certain roles and members", guild_ids=guild_ids)
+#async def lockdown(ctx, set:Option(string, ""));
+
 
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
