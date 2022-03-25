@@ -118,7 +118,8 @@ class helpClass(discord.ui.View):
     discord.SelectOption(label='Polls', value="Polls", description='Easily configurable polls for voting!', emoji='🥧'),
     discord.SelectOption(label='Server Stats', value="Server Stats", description='Display multiple unique stats in a seperate category', emoji='📊'),
     discord.SelectOption(label='Disboard Helper', value="Disboard Helper", description='Track bumps, reminders to bump, and more', emoji="<:disboard:932934384774963200>"),
-    discord.SelectOption(label='Moderation', value="Moderation", description='Simple moderation and nickname detection', emoji="🔨")
+    discord.SelectOption(label='Moderation', value="Moderation", description='Simple moderation and nickname detection', emoji="🔨"),
+    discord.SelectOption(label='Ticketing', value="Ticketing", description='Ticket tool for support from staff', emoji="🎟️")
   ])
   async def select_callback(self, select, interaction):
     role = interaction.guild.roles[random.randint(1, len(interaction.guild.roles)-1)]
@@ -243,6 +244,16 @@ class helpClass(discord.ui.View):
         `/nick toggle [bool]` - Turn the detector on or off
         `/nick vulgar [bool]` - Toggle the vulgar language filter
         `/nick percent [int]` - Set the percent required for non-standard character filters
+        """
+    elif select.values[0] == "Ticketing":
+      text = """
+      The **Ticketing** module is used to create a ticket system for your server similar to Ticket Tool.
+      
+      **Commands**
+      """
+      if staff(interaction):
+        text += """
+        `/ticket place` - Move the ticket panel to this channel
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
