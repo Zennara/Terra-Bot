@@ -14,7 +14,6 @@ import random
 import asyncio
 import json
 from discord.ext import commands
-from discord.ui import InputText, Modal
 from discord import Option
 from discord.commands import SlashCommandGroup
 from datetime import datetime, timedelta
@@ -1047,38 +1046,40 @@ ticket = SlashCommandGroup("ticket", "Ticketing commands", guild_ids=guild_ids)
 
 @ticket.command(description="Place the ticket panel here", guild_ids=guild_ids)
 async def place(ctx):
-  openTicket = Button(label="Open Ticket", style=discord.ButtonStyle.green, emoji="🎟️")
-
   class MyView(discord.ui.View):
-    @discord.ui.button(label="Modal Test", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Open Ticket", style=discord.ButtonStyle.primary)
     async def button_callback(self, button, interaction):
-        await interaction.response.send_modal(modal)
+      await interaction.response.send_message(content="test")
 
-    view = MyView()
-  
+  await ctx.respond("test")
+
+
+bot.add_application_command(ticket)
+
 
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->
 """
-@bot.message_command(name="Get Message ID", guild_ids=guild_ids)
-async def messageid(ctx, message: discord.Message):
-  await confirm(ctx, f"Message ID: `{message.id}`", True)
 
-@bot.message_command(name="Get Channel ID", guild_ids=guild_ids)
-async def channelid(ctx, message: discord.Message):
-  await confirm(ctx, f"{message.channel.mention} ID: `{message.channel.id}`", True)
+#@bot.message_command(name="Get Message ID", guild_ids=guild_ids)
+#async def messageid(ctx, message: discord.Message):
+#  await confirm(ctx, f"Message ID: `{message.id}`", True)
 
-@bot.message_command(name="Get Category ID", guild_ids=guild_ids)
-async def categoryid(ctx, message: discord.Message):
-  await confirm(ctx, f"**{message.channel.category.name}** ID: `{message.channel.category_id}`", True)
+#@bot.message_command(name="Get Channel ID", guild_ids=guild_ids)
+#async def channelid(ctx, message: discord.Message):
+#  await confirm(ctx, f"{message.channel.mention} ID: `{message.channel.id}`", True)
 
-@bot.message_command(name="Get Guild ID", guild_ids=guild_ids)
-async def guildid(ctx, message: discord.Message):
-  await confirm(ctx, f"{message.guild.name} ID: `{message.guild.id}`", True)
+#@bot.message_command(name="Get Category ID", guild_ids=guild_ids)
+#async def categoryid(ctx, message: discord.Message):
+#  await confirm(ctx, f"**{message.channel.category.name}** ID: `{message.channel.category_id}`", True)
 
-@bot.user_command(name="Get User ID", guild_ids=guild_ids)
-async def mention(ctx, member: discord.Member):
-  await confirm(ctx, f"{member.name} ID: `{member.id}`", True)
+#@bot.message_command(name="Get Guild ID", guild_ids=guild_ids)
+#async def guildid(ctx, message: discord.Message):
+#  await confirm(ctx, f"{message.guild.name} ID: `{message.guild.id}`", True)
+
+#@bot.user_command(name="Get User ID", guild_ids=guild_ids)
+#async def mention(ctx, member: discord.Member):
+#  await confirm(ctx, f"{member.name} ID: `{member.id}`", True)
 
 """
 <----------------------------------EVENTS----------------------------------->
