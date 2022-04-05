@@ -1044,14 +1044,49 @@ bot.add_application_command(nick)
 
 ticket = SlashCommandGroup("ticket", "Ticketing commands", guild_ids=guild_ids)
 
+
+# ticket classes
+class OpenTicket(discord.ui.View):
+  def __init__(self):
+    super().__init__(timeout=None)
+
+  @discord.ui.button(
+    label="Close",
+    emoji="🔒",
+    style=discord.ButtonStyle.grey,
+    custom_id="persistent_view:grey",
+  )
+  async def green(self, button: discord.ui.Button, interaction: discord.Interaction):
+    await interaction.response.send_message("This is green.", ephemeral=True)
+
+class MyView(discord.ui.View):
+  def __init__(self):
+    super().__init__(timeout=None)
+
+  @discord.ui.button(
+    label="Open Ticket",
+    emoji="🎟️",
+    style=discord.ButtonStyle.grey,
+    custom_id="persistent_view:openTicket",
+  )
+  async def openTicket(self, button: discord.ui.Button, interaction: discord.Interaction):
+    for ct in interaction.guild.categories:
+      if ct.name == "OPEN TICKETS":
+        cat = ct
+        break
+    else:
+      cat = await interaction.guild.create_category(name="OPEN TICKETS")
+    cnl = await interaction.guild.create_text_channel(name="open", category=cat)
+    embed = discord.Embed(description="A member of our team will be with you shortly. Provide a brief explanation of your issue below. To close this ticket click the 🔒", color=0x00FF00)
+    await cnl.send(content=f"Welcome, {interaction.user.mention}", embed=embed)
+    await interaction.response.send_message(f"Your ticket has been created in {cnl.mention}", ephemeral=True)
+
+
+
 @ticket.command(description="Place the ticket panel here", guild_ids=guild_ids)
 async def place(ctx):
-  class MyView(discord.ui.View):
-    @discord.ui.button(label="Open Ticket", style=discord.ButtonStyle.primary)
-    async def button_callback(self, button, interaction):
-      await interaction.response.send_message(content="test")
-
-  await ctx.respond("test")
+  embed = discord.Embed(description="To get help from our team, please click the button below. We will be with you as soon as possible.", title="Support", color=0xFFFF00)
+  await ctx.respond(embed=embed, view=MyView())
 
 
 bot.add_application_command(ticket)
@@ -1099,6 +1134,7 @@ async def on_ready():
   #persistance
   bot.add_view(react())
   bot.add_view(helpClass())
+  bot.add_view(MyView())
 
 @bot.event
 async def on_raw_reaction_add(payload):
