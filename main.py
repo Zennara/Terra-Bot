@@ -14,6 +14,7 @@ import random
 import asyncio
 import json
 from discord.ext import commands
+from discord.ui import InputText, Modal
 from discord import Option
 from discord.commands import SlashCommandGroup
 from datetime import datetime, timedelta
@@ -1037,6 +1038,24 @@ bot.add_application_command(nick)
 #@bot.slash_command(name="lockdown", description="Lockdown the server to certain roles and members", guild_ids=guild_ids)
 #async def lockdown(ctx, set:Option(string, ""));
 
+
+"""
+<----------------------------------TICKETING COMMANDS----------------------------------->
+"""
+
+ticket = SlashCommandGroup("ticket", "Ticketing commands", guild_ids=guild_ids)
+
+@ticket.command(description="Place the ticket panel here", guild_ids=guild_ids)
+async def place(ctx):
+  openTicket = Button(label="Open Ticket", style=discord.ButtonStyle.green, emoji="🎟️")
+
+  class MyView(discord.ui.View):
+    @discord.ui.button(label="Modal Test", style=discord.ButtonStyle.primary)
+    async def button_callback(self, button, interaction):
+        await interaction.response.send_modal(modal)
+
+    view = MyView()
+  
 
 """
 <----------------------------------CONTEXT MENU COMMANDS----------------------------------->

@@ -1,9 +1,9 @@
 language="python3"
 run = """
 python -m pip install git+https://github.com/Pycord-Development/pycord
-python main.py
 pip install profanity-filter
 python3 -m spacy download en
+python main.py
 """
 
 [packager]
