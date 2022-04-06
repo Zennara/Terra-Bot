@@ -1080,15 +1080,18 @@ class StaffTicketControls(discord.ui.View):
     custom_id="persistent_view:reopen",
   )
   async def reopen(self, button: discord.ui.Button, interaction: discord.Interaction):
-    for ct in interaction.guild.categories:
-      if ct.name == "OPEN TICKETS":
-        cat = ct
-        break
+    if staffInteraction(interaction):
+      for ct in interaction.guild.categories:
+        if ct.name == "OPEN TICKETS":
+          cat = ct
+          break
+      else:
+        cat = await interaction.guild.create_category(name="OPEN TICKETS")
+      await interaction.channel.edit(category=cat)
+      await interaction.response.send_message(f"Ticket re-opened by {interaction.user.mention}", ephemeral=False)
+      await interaction.message.delete()
     else:
-      cat = await interaction.guild.create_category(name="OPEN TICKETS")
-    await interaction.channel.edit(category=cat)
-    await interaction.response.send_message(f"Ticket re-opened by {interaction.user.mention}", ephemeral=False)
-    await interaction.message.delete()
+      await interaction.response.send_message("Insufficient role", color=0xFF0000)
 
   @discord.ui.button(
     label="Delete",
@@ -1097,9 +1100,12 @@ class StaffTicketControls(discord.ui.View):
     custom_id="persistent_view:delete",
   )
   async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
-    embed = discord.Embed(description="Ticket will be deleted shortly.", color=0xFF0000)
-    await interaction.channel.send(embed=embed)
-    await interaction.channel.delete()
+    if staffInteraction(interaction):
+      embed = discord.Embed(description="Ticket will be deleted shortly.", color=0xFF0000)
+      await interaction.channel.send(embed=embed)
+      await interaction.channel.delete()
+    else:
+      await interaction.response.send_message("Insufficient role", color=0xFF0000)
     
     
 class OpenTicket(discord.ui.View):
