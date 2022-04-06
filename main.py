@@ -1126,7 +1126,14 @@ class OpenTicket(discord.ui.View):
           cat = ct
           break
       else:
-        cat = await interaction.guild.create_category(name="CLOSED TICKETS")
+        overwrites = {
+          interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        }
+        mod = db[str(interaction.guild.id)]["mod"]
+        if mod != 0:
+          support = interaction.guild.get_role(mod)
+          overwrites[support] = discord.PermissionOverwrite(read_messages=True)
+        cat = await interaction.guild.create_category(name="CLOSED TICKETS", overwrites=overwrites)
       await interaction.channel.edit(category=cat)
       embed = discord.Embed(description=f"Ticket closed by {interaction.user.mention}", color=0xFFFF00)
       await interaction.channel.send(embed=embed)
@@ -1151,7 +1158,14 @@ class MyView(discord.ui.View):
         cat = ct
         break
     else:
-      cat = await interaction.guild.create_category(name="OPEN TICKETS")
+      overwrites = {
+        interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+      }
+      mod = db[str(interaction.guild.id)]["mod"]
+      if mod != 0:
+        support = interaction.guild.get_role(mod)
+        overwrites[support] = discord.PermissionOverwrite(read_messages=True)
+      cat = await interaction.guild.create_category(name="OPEN TICKETS", overwrites=overwrites)
   
     overwrites = {
       interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
