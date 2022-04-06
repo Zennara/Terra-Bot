@@ -1071,7 +1071,7 @@ class StaffTicketControls(discord.ui.View):
   async def transcript(self, button: discord.ui.Button, interaction: discord.Interaction):
     await chat_exporter.quick_export(interaction.channel)
     embed = discord.Embed(description="Ticket saved successfully.", color=0x00FF00)
-    await interaction.response.send_message(embed=embed)
+    await interaction.channel.send(embed=embed)
 
   @discord.ui.button(
     label="Re-Open",
@@ -1088,7 +1088,8 @@ class StaffTicketControls(discord.ui.View):
       else:
         cat = await interaction.guild.create_category(name="OPEN TICKETS")
       await interaction.channel.edit(category=cat)
-      await interaction.response.send_message(f"Ticket re-opened by {interaction.user.mention}", ephemeral=False)
+      embed = discord.Embed(description=f"Ticket re-opened by {interaction.user.mention}", color=0xFFFF00)
+      await interaction.channel.send(embed=embed)
       await interaction.message.delete()
     else:
       await interaction.response.send_message("Insufficient role", color=0xFF0000)
@@ -1127,7 +1128,8 @@ class OpenTicket(discord.ui.View):
       else:
         cat = await interaction.guild.create_category(name="CLOSED TICKETS")
       await interaction.channel.edit(category=cat)
-      await interaction.response.send_message(f"Ticket closed by {interaction.user.mention}", ephemeral=False)
+      embed = discord.Embed(description=f"Ticket closed by {interaction.user.mention}", color=0xFFFF00)
+      await interaction.channel.send(embed=embed)
       embed = discord.Embed(description="```SUPPORT TEAM CONTROLS```", color=0x7F8C8D)
       await interaction.channel.send(embed=embed, view=StaffTicketControls())
     else:
