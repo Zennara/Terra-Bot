@@ -21,6 +21,8 @@ import math
 from discord.commands import permissions
 from profanity_filter import ProfanityFilter
 import spacy
+import chat_exporter
+import io
 
 
 intents = discord.Intents.all()
@@ -1057,7 +1059,9 @@ class StaffTicketControls(discord.ui.View):
     custom_id="persistent_view:transcript",
   )
   async def transcript(self, button: discord.ui.Button, interaction: discord.Interaction):
-    await interaction.response.send_message("This is green.", ephemeral=True)
+    await chat_exporter.quick_export(interaction.channel)
+    embed = discord.Embed(description="Ticket saved successfully.", color=0x00FF00)
+    await interaction.response.send_message(embed=embed)
 
   @discord.ui.button(
     label="Re-Open",
