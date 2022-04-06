@@ -1161,7 +1161,8 @@ class MyView(discord.ui.View):
     if mod != 0:
       support = interaction.guild.get_role(mod)
       overwrites[support] = discord.PermissionOverwrite(read_messages=True)
-    cnl = await interaction.guild.create_text_channel(name="ticket", category=cat, overwrites=overwrites)
+    cnl = await interaction.guild.create_text_channel(name="ticket-"+str(db[str(interaction.guild.id)]["ticket"][0]), category=cat, overwrites=overwrites)
+    db[str(interaction.guild.id)]["ticket"][0] += 1
     embed = discord.Embed(description="A member of our team will be with you shortly. Provide a brief explanation of your issue below. To close this ticket click the 🔒", color=0x00FF00)
     await cnl.send(content=f"Welcome, {interaction.user.mention}", embed=embed, view=OpenTicket())
     await interaction.response.send_message(f"Your ticket has been created in {cnl.mention}", ephemeral=True)
