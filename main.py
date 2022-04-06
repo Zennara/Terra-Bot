@@ -1083,7 +1083,9 @@ class StaffTicketControls(discord.ui.View):
     custom_id="persistent_view:delete",
   )
   async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
-    await interaction.response.send_message("This is green.", ephemeral=True)
+    embed = discord.Embed(description="Ticket will be deleted shortly.", color=0xFF0000)
+    await interaction.channel.send(embed=embed)
+    await interaction.channel.delete()
     
     
 class OpenTicket(discord.ui.View):
