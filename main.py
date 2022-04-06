@@ -1051,13 +1051,40 @@ class StaffTicketControls(discord.ui.View):
     super().__init__(timeout=None)
 
   @discord.ui.button(
-    label="Close",
-    emoji="🔒",
+    label="Transcript",
+    emoji="📰",
     style=discord.ButtonStyle.grey,
-    custom_id="persistent_view:grey",
+    custom_id="persistent_view:transcript",
   )
-  async def green(self, button: discord.ui.Button, interaction: discord.Interaction):
+  async def transcript(self, button: discord.ui.Button, interaction: discord.Interaction):
     await interaction.response.send_message("This is green.", ephemeral=True)
+
+  @discord.ui.button(
+    label="Re-Open",
+    emoji="📰",
+    style=discord.ButtonStyle.grey,
+    custom_id="persistent_view:reopen",
+  )
+  async def reopen(self, button: discord.ui.Button, interaction: discord.Interaction):
+    for ct in interaction.guild.categories:
+      if ct.name == "OPEN TICKETS":
+        cat = ct
+        break
+    else:
+      cat = await interaction.guild.create_category(name="OPEN TICKETS")
+    await interaction.channel.edit(category=cat)
+    await interaction.response.send_message(f"Ticket re-opened by {interaction.user.mention}", ephemeral=False)
+    await interaction.message.delete()
+
+  @discord.ui.button(
+    label="Delete",
+    emoji="⛔",
+    style=discord.ButtonStyle.grey,
+    custom_id="persistent_view:delete",
+  )
+  async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
+    await interaction.response.send_message("This is green.", ephemeral=True)
+    
     
 class OpenTicket(discord.ui.View):
   def __init__(self):
@@ -1067,7 +1094,7 @@ class OpenTicket(discord.ui.View):
     label="Close",
     emoji="🔒",
     style=discord.ButtonStyle.grey,
-    custom_id="persistent_view:grey",
+    custom_id="persistent_view:closeTicket",
   )
   async def closeTicket(self, button: discord.ui.Button, interaction: discord.Interaction):
     if interaction.channel.category.name != "CLOSED TICKETS":
@@ -1079,6 +1106,8 @@ class OpenTicket(discord.ui.View):
         cat = await interaction.guild.create_category(name="CLOSED TICKETS")
       await interaction.channel.edit(category=cat)
       await interaction.response.send_message(f"Ticket closed by {interaction.user.mention}", ephemeral=False)
+      embed = discord.Embed(description="```SUPPORT TEAM CONTROLS```", color=0x7F8C8D)
+      await interaction.channel.send(embed=embed, view=StaffTicketControls())
     else:
       await interaction.response.send_message(f"Ticket already closed", ephemeral=True)
 
@@ -1099,7 +1128,7 @@ class MyView(discord.ui.View):
         break
     else:
       cat = await interaction.guild.create_category(name="OPEN TICKETS")
-    cnl = await interaction.guild.create_text_channel(name="open", category=cat)
+    cnl = await interaction.guild.create_text_channel(name="ticket", category=cat)
     embed = discord.Embed(description="A member of our team will be with you shortly. Provide a brief explanation of your issue below. To close this ticket click the 🔒", color=0x00FF00)
     await cnl.send(content=f"Welcome, {interaction.user.mention}", embed=embed, view=OpenTicket())
     await interaction.response.send_message(f"Your ticket has been created in {cnl.mention}", ephemeral=True)
