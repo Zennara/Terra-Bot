@@ -62,7 +62,7 @@ def find_invite_by_code(invite_list, code):
       return invite
 
 def resetDB(guild):
-  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":[False,0], "nick": [True,True, 50], "users":{}}
+  db[str(guild.id)] = {"mod":0, "iroles":{}, "roles":[], "star":[False,"⭐",0,[],5], "disboard":[False,0], "nick": [True,True, 50], "ticket":[0,0], "users":{}}
   #guild - [iroles, users]
   #users format - [invites,leaves,code,inviter,bumps]
 
@@ -256,6 +256,7 @@ class helpClass(discord.ui.View):
       if staff(interaction):
         text += """
         `/ticket place` - Move the ticket panel to this channel
+        `/ticket support [role]` - Set the lowest role for the ticket support team
         """
       
     embed = discord.Embed(color=0x00FF00,description=text, title=select.values[0])
@@ -1145,6 +1146,10 @@ class MyView(discord.ui.View):
 async def place(ctx):
   embed = discord.Embed(description="To get help from our team, please click the button below. We will be with you as soon as possible.", title="Support", color=0xFFFF00)
   await ctx.respond(embed=embed, view=MyView())
+
+@ticket.command(description="Support team role for tickets", guild_ids=guild_ids)
+async def support(ctx, role:Option(discord.Role, description="The lowest role on the support team")):
+  await confirm(ctx, "The lowest role on the support team is now"+role.mention, False)
 
 
 bot.add_application_command(ticket)
