@@ -256,15 +256,16 @@ class helpClass(discord.ui.View):
         `/nick toggle [bool]` - Turn the detector on or off
         `/nick vulgar [bool]` - Toggle the vulgar language filter
         `/nick percent [int]` - Set the percent required for non-standard character filters
+        `/staff [role]` - Set the lowest role for staff commands in the heirarchy
         """
     elif select.values[0] == "Ticketing":
       text = """
       The **Ticketing** module is used to create a ticket system for your server similar to Ticket Tool.
-      
-      **Commands**
+    
       """
       if staff(interaction):
         text += """
+        **Mod Commands**
         `/ticket place` - Move the ticket panel to this channel
         """
       
@@ -1046,6 +1047,23 @@ async def ntoggle(ctx, set:Option(bool, "Whether to enable or disable the filter
 
 bot.add_application_command(nick)
 
+@bot.slash_command(name="staff",description="Set the lowest role for staff commands", guild_ids=guild_ids)
+async def staffRole(ctx, role:Option(discord.Role, "The role for the staff group", required=False, default=None)):
+  if staff(ctx):
+    if role == None:
+      r = db[str(ctx.guild.id)]["mod"]
+      if r == 0:
+        rl = "None"
+      else:
+        rl = ctx.guild.get_role(db[str(ctx.guild.id)]["mod"]).mention
+      await confirm(ctx, "The lowest role in the role heirarchy for staff commands is "+rl, False)
+    else:
+      db[str(ctx.guild.id)]["mod"] = role.id
+      await confirm(ctx, "The lowest role in the role heirarchy for staff commands is now "+role.mention, False)
+  else:
+    await error(ctx, "Insufficient role in the server role heirarchy")
+  
+
 #@bot.slash_command(name="lockdown", description="Lockdown the server to certain roles and members", guild_ids=guild_ids)
 #async def lockdown(ctx, set:Option(string, ""));
 
@@ -1185,9 +1203,12 @@ class MyView(discord.ui.View):
 
 @ticket.command(description="Place the ticket panel here", guild_ids=guild_ids)
 async def place(ctx):
-  embed = discord.Embed(description="To get help from our team, please click the button below. We will be with you as soon as possible.", title="Support", color=0xFFFF00)
-  await ctx.channel.send(embed=embed, view=MyView())
-  await confirm(ctx, "Ticket panel sent in "+ctx.channel.mention, True)
+  if staff(ctx):
+    embed = discord.Embed(description="To get help from our team, please click the button below. We will be with you as soon as possible.", title="Support", color=0xFFFF00)
+    await ctx.channel.send(embed=embed, view=MyView())
+    await confirm(ctx, "Ticket panel sent in "+ctx.channel.mention, True)
+  else:
+    await error(ctx, "Insufficient role in the server role heirarchy")
 
 
 bot.add_application_command(ticket)
