@@ -3,6 +3,7 @@ run = """
 python -m pip install git+https://github.com/Pycord-Development/pycord
 pip install profanity-filter
 python -m spacy download en
+pip install chat-exporter
 python main.py
 """
 
