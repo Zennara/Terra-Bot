@@ -1186,7 +1186,8 @@ class MyView(discord.ui.View):
 @ticket.command(description="Place the ticket panel here", guild_ids=guild_ids)
 async def place(ctx):
   embed = discord.Embed(description="To get help from our team, please click the button below. We will be with you as soon as possible.", title="Support", color=0xFFFF00)
-  await ctx.respond(embed=embed, view=MyView())
+  await ctx.channel.send(embed=embed, view=MyView())
+  await confirm(ctx, "Ticket panel sent in "+ctx.channel.mention, True)
 
 
 bot.add_application_command(ticket)
