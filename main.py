@@ -303,7 +303,7 @@ async def ping(ctx):
 
 @bot.slash_command(description="Clear the database",guild_ids=guild_ids)
 async def clear(ctx):
-  if staff(ctx):
+  if checkPerms(ctx):
     for key in db:
       del key
     resetDB(ctx.guild)
