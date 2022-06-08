@@ -531,28 +531,28 @@ async def iroles(ctx):
 """
 <----------------------------------REACTION AND DROPDOWN ROLE REWARDS----------------------------------->
 """
-class react(discord.ui.View):
-  def __init__(self):
-      super().__init__(timeout=None)
+#class react(discord.ui.View):
+#  def __init__(self):
+#      super().__init__(timeout=None)
+#
+#  ROLE_IDS = [923728545224732712, 931784471039049769, 931784416483770408]
+#  @discord.ui.select(custom_id="select-1", placeholder='Pick your colour', min_values=0, max_values=3, options=[
+#    discord.SelectOption(label='Test1', value=ROLE_IDS[0], description='This is for test1', emoji='🟥'),
+#    discord.SelectOption(label='Test2', value=ROLE_IDS[1], description='This is for test2', emoji='🟩'),
+#    discord.SelectOption(label='Test3', value=ROLE_IDS[2], description='This is for test3', emoji='🟦')
+#  ])
+#  async def select_callback(self, select, interaction):
+#    text = ""
+#    global ROLE_IDS
+#    for opt in select.values:
+#      text = f"{text}{interaction.guild.get_role(int(opt)).mention}, "
+#    await interaction.response.send_message(f'You will now be notified for {text}'[:-2], ephemeral=True)
 
-  ROLE_IDS = [923728545224732712, 931784471039049769, 931784416483770408]
-  @discord.ui.select(custom_id="select-1", placeholder='Pick your colour', min_values=0, max_values=3, options=[
-    discord.SelectOption(label='Test1', value=ROLE_IDS[0], description='This is for test1', emoji='🟥'),
-    discord.SelectOption(label='Test2', value=ROLE_IDS[1], description='This is for test2', emoji='🟩'),
-    discord.SelectOption(label='Test3', value=ROLE_IDS[2], description='This is for test3', emoji='🟦')
-  ])
-  async def select_callback(self, select, interaction):
-    text = ""
-    global ROLE_IDS
-    for opt in select.values:
-      text = f"{text}{interaction.guild.get_role(int(opt)).mention}, "
-    await interaction.response.send_message(f'You will now be notified for {text}'[:-2], ephemeral=True)
-
-@bot.slash_command(description="Place the drop-down role reward menu in this channel", guild_ids=guild_ids)
-async def drophere(ctx):
-  embed = discord.Embed(color=0x00FF00, description="**Select the roles you wish to access.**")
-  await ctx.send(embed=embed, view=react())
-  await confirm(ctx, f"Dropdown menu sent", True)
+#@bot.slash_command(description="Place the drop-down role reward menu in this channel", guild_ids=guild_ids)
+#async def drophere(ctx):
+#  embed = discord.Embed(color=0x00FF00, description="**Select the roles you wish to access.**")
+#  await ctx.send(embed=embed, view=react())
+#  await confirm(ctx, f"Dropdown menu sent", True)
 
 @bot.slash_command(description="Add a role reaction reward", guild_ids=guild_ids)
 async def addrr(ctx, message:Option(str, "The message link to add the reaction to", required=True), emoji:Option(str, "The emoji for the reaction", required=True), role:Option(discord.Role, "The role to reward", required=True)):
