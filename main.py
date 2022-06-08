@@ -311,11 +311,11 @@ async def clear(ctx):
   else:
     await error(ctx, "You do not have the proper permissions to do this")
 
-@bot.slash_command(description="Reset the database",guild_ids=guild_ids, default_permissions=False)
-@permissions.is_user(427968672980533269)
+@bot.slash_command(description="Reset the database (dev only)",guild_ids=guild_ids)
 async def reset(ctx):
-  for guild in bot.guilds:
-    resetDB(guild)
+  if ctx.author.id == 427968672980533269:
+    for guild in bot.guilds:
+      resetDB(guild)
   await confirm(ctx, "Database was reset", True)
 
 
