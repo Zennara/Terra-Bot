@@ -288,6 +288,8 @@ async def help(ctx):
     
     **Staff Setup**
     Some general things to know as a server mod. Ensure to use the `setup` slash commands to set up the server for your liking. This will also include setting up the role able to use bot-editing commands like `edit` and `fetch`.
+
+    **Please make sure to change your integration command permissions for your server!**
     """
   embed = discord.Embed(color=0x00FF00,description=helpText)
   embed.set_footer(text="_______________________\nMade By Zennara#8377\nSelect an module for extensive help", icon_url=ctx.guild.get_member(bot.user.id).display_avatar.url)
